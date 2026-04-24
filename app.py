@@ -51,8 +51,13 @@ def generate_invite_code():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        raw_username = request.form.get('username')
         password = request.form.get('password')
+        
+        if not raw_username or not password:
+            return render_template('login.html', error="Please enter both username and password")
+            
+        username = raw_username.strip().lower()
         users = load_data(USERS_FILE)
         
         if username in users and check_password_hash(users[username]['password'], password):
@@ -64,8 +69,19 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
-    username = request.form.get('username')
+    raw_username = request.form.get('username')
     password = request.form.get('password')
+    
+    if not raw_username or not password:
+        return render_template('login.html', error="Please enter both username and password")
+        
+    username = raw_username.strip().lower()
+    
+    if len(username) < 3:
+        return render_template('login.html', error="Username must be at least 3 characters")
+    if len(password) < 6:
+        return render_template('login.html', error="Password must be at least 6 characters")
+        
     users = load_data(USERS_FILE)
     
     if username in users:
