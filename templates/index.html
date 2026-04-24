@@ -126,13 +126,13 @@
     <div class="container">
         <header>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1 style="margin: 0;">SyncCent</h1>
+                <h1 style="margin: 0;">{{ group_name }}</h1>
                 <div style="text-align: right;">
                     <span style="font-weight: 600; margin-right: 10px;">Hi, {{ username }}</span>
                     <a href="/logout" style="color: #ef4444; text-decoration: none; font-size: 0.875rem;">Logout</a>
                 </div>
             </div>
-            <p style="margin-top: 5px;">Collaborative Money Management</p>
+            <p style="margin-top: 5px; color: #64748b;">Invite Code: <strong style="color: var(--text);">{{ invite_code }}</strong></p>
         </header>
 
         <div class="card">

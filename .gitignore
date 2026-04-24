@@ -4,3 +4,4 @@ __pycache__/
 expenses.json
 .DS_Store
 users.json
+groups.json

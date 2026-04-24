@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncCent - Setup Group</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            border-top: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .divider span {
+            background: var(--card);
+            padding: 0 10px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Welcome, {{ username }}!</h2>
+            <p style="color: #64748b; margin-bottom: 2rem;">To start tracking expenses, you need to create a new shared group or join an existing one.</p>
+            
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <!-- Create Group -->
+            <form action="/create_group" method="POST">
+                <input type="text" name="group_name" placeholder="E.g., Our Home, Miami Trip" required>
+                <button type="submit">Create New Group</button>
+            </form>
+
+            <div class="divider"><span>OR</span></div>
+
+            <!-- Join Group -->
+            <form action="/join_group" method="POST">
+                <input type="text" name="invite_code" placeholder="Enter 6-digit Invite Code" required>
+                <button type="submit" style="background-color: #10b981;">Join Existing Group</button>
+            </form>
+            
+            <div style="margin-top: 2rem;">
+                <a href="/logout" style="color: #ef4444; text-decoration: none; font-size: 0.875rem;">Logout</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
