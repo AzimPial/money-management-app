@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncCent - Simple Money Manager</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .summary {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .total-amount {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .expense-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .expense-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        .expense-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .expense-desc {
+            font-weight: 600;
+        }
+
+        .expense-cat {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .expense-amount {
+            font-weight: 700;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SyncCent</h1>
+            <p>Collaborative Money Management</p>
+        </header>
+
+        <div class="card">
+            <div class="summary">
+                Total Monthly Spending: <span class="total-amount">${{ "%.2f"|format(total) }}</span>
+            </div>
+            
+            <form action="/add" method="POST">
+                <input type="text" name="description" placeholder="What did you buy?" required>
+                <input type="number" name="amount" step="0.01" placeholder="How much?" required>
+                <select name="category">
+                    <option value="General">General</option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Dining">Dining</option>
+                    <option value="Fuel">Fuel</option>
+                    <option value="Shopping">Shopping</option>
+                </select>
+                <button type="submit">Add Expense</button>
+            </form>
+        </div>
+
+        <h3>Recent Expenses</h3>
+        <ul class="expense-list">
+            {% for expense in expenses|reverse %}
+            <li class="expense-item">
+                <div class="expense-info">
+                    <span class="expense-desc">{{ expense.description }}</span>
+                    <span class="expense-cat">{{ expense.category }}</span>
+                </div>
+                <span class="expense-amount">${{ "%.2f"|format(expense.amount|float) }}</span>
+            </li>
+            {% endfor %}
+            {% if not expenses %}
+            <p style="text-align: center; color: #94a3b8;">No expenses yet. Add your first one above!</p>
+            {% endif %}
+        </ul>
+    </div>
+</body>
+</html>
