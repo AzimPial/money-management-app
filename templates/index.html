@@ -125,8 +125,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>SyncCent</h1>
-            <p>Collaborative Money Management</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="margin: 0;">SyncCent</h1>
+                <div style="text-align: right;">
+                    <span style="font-weight: 600; margin-right: 10px;">Hi, {{ username }}</span>
+                    <a href="/logout" style="color: #ef4444; text-decoration: none; font-size: 0.875rem;">Logout</a>
+                </div>
+            </div>
+            <p style="margin-top: 5px;">Collaborative Money Management</p>
         </header>
 
         <div class="card">
@@ -155,7 +161,7 @@
             <li class="expense-item">
                 <div class="expense-info">
                     <span class="expense-desc">{{ expense.description }}</span>
-                    <span class="expense-cat">{{ expense.category }}</span>
+                    <span class="expense-cat">{{ expense.category }} • Paid by <span style="font-weight:600; color:var(--primary);">{{ expense.paid_by or 'Unknown' }}</span></span>
                 </div>
                 <span class="expense-amount">${{ "%.2f"|format(expense.amount|float) }}</span>
             </li>
