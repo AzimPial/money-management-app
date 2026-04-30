@@ -19,21 +19,31 @@ logging.basicConfig(level=logging.INFO)
 
 import firebase_admin
 from firebase_admin import credentials, firestore
-import base64
 
 db = None
 creds = None
 
-firebase_creds_b64 = os.environ.get('FIREBASE_CREDS_B64')
-logging.info(f"FIREBASE_CREDS_B64 present: {bool(firebase_creds_b64)}")
+# Try multiple env vars (each field separately)
+project_id = os.environ.get('FIREBASE_PROJECT_ID')
+private_key = os.environ.get('FIREBASE_PRIVATE_KEY')
+client_email = os.environ.get('FIREBASE_CLIENT_EMAIL')
 
-if firebase_creds_b64:
+logging.info(f"FIREBASE_PROJECT_ID: {bool(project_id)}")
+logging.info(f"FIREBASE_PRIVATE_KEY: {bool(private_key)}")
+logging.info(f"FIREBASE_CLIENT_EMAIL: {bool(client_email)}")
+
+if project_id and private_key and client_email:
     try:
-        creds_json = base64.b64decode(firebase_creds_b64).decode('utf-8')
-        creds = credentials.Certificate(json.loads(creds_json))
-        logging.info("Firebase credentials loaded from env var")
+        creds_dict = {
+            "type": "service_account",
+            "project_id": project_id,
+            "private_key": private_key,
+            "client_email": client_email
+        }
+        creds = credentials.Certificate(creds_dict)
+        logging.info("Firebase credentials loaded from env vars")
     except Exception as e:
-        logging.error(f"Failed to parse FIREBASE_CREDS_B64: {e}")
+        logging.error(f"Failed to create credentials: {e}")
 
 if creds:
     try:
