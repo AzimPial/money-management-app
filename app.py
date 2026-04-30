@@ -19,16 +19,19 @@ logging.basicConfig(level=logging.INFO)
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import base64
 
 db = None
 creds = None
 
-firebase_creds = os.environ.get('FIREBASE_CREDS')
-if firebase_creds:
+# Check for Firebase credentials (base64 encoded in env var)
+firebase_creds_b64 = os.environ.get('FIREBASE_CREDS_B64')
+if firebase_creds_b64:
     try:
-        creds = credentials.Certificate(json.loads(firebase_creds))
+        creds_json = base64.b64decode(firebase_creds_b64).decode('utf-8')
+        creds = credentials.Certificate(json.loads(creds_json))
     except Exception as e:
-        logging.error(f"Failed to parse FIREBASE_CREDS: {e}")
+        logging.error(f"Failed to parse FIREBASE_CREDS_B64: {e}")
 elif os.path.exists('firebase-service-account.json'):
     try:
         creds = credentials.Certificate('firebase-service-account.json')
