@@ -24,25 +24,24 @@ import base64
 db = None
 creds = None
 
-# Check for Firebase credentials (base64 encoded in env var)
 firebase_creds_b64 = os.environ.get('FIREBASE_CREDS_B64')
+logging.info(f"FIREBASE_CREDS_B64 present: {bool(firebase_creds_b64)}")
+
 if firebase_creds_b64:
     try:
         creds_json = base64.b64decode(firebase_creds_b64).decode('utf-8')
         creds = credentials.Certificate(json.loads(creds_json))
+        logging.info("Firebase credentials loaded from env var")
     except Exception as e:
         logging.error(f"Failed to parse FIREBASE_CREDS_B64: {e}")
-elif os.path.exists('firebase-service-account.json'):
-    try:
-        creds = credentials.Certificate('firebase-service-account.json')
-    except Exception as e:
-        logging.error(f"Failed to load service account: {e}")
 
 if creds:
     try:
         firebase_admin.initialize_app(creds)
         db = firestore.client()
         logging.info("Firebase connected successfully")
+    except Exception as e:
+        logging.error(f"Firebase init error: {e}")
     except Exception as e:
         logging.error(f"Firebase init error: {e}")
 
