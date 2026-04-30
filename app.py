@@ -23,33 +23,36 @@ from firebase_admin import credentials, firestore
 db = None
 creds = None
 
-# Try multiple env vars (each field separately)
+# Method 1: Try individual env vars
 project_id = os.environ.get('FIREBASE_PROJECT_ID')
 private_key = os.environ.get('FIREBASE_PRIVATE_KEY')
 client_email = os.environ.get('FIREBASE_CLIENT_EMAIL')
-
-logging.info(f"FIREBASE_PROJECT_ID: {bool(project_id)}")
-logging.info(f"FIREBASE_PRIVATE_KEY: {bool(private_key)}")
-logging.info(f"FIREBASE_CLIENT_EMAIL: {bool(client_email)}")
 
 if project_id and private_key and client_email:
     try:
         creds_dict = {
             "type": "service_account",
             "project_id": project_id,
-            "private_key": private_key,
+            "private_key": private_key.replace('\\n', '\n'),
             "client_email": client_email
         }
         creds = credentials.Certificate(creds_dict)
-        logging.info("Firebase credentials loaded from env vars")
     except Exception as e:
-        logging.error(f"Failed to create credentials: {e}")
+        logging.error(f"Method 1 failed: {e}")
+
+# Method 2: Try from file (for local dev)
+if not creds and os.path.exists('firebase-service-account.json'):
+    try:
+        creds = credentials.Certificate('firebase-service-account.json')
+    except Exception as e:
+        logging.error(f"Method 2 failed: {e}")
 
 if creds:
     try:
-        firebase_admin.initialize_app(creds)
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(creds)
         db = firestore.client()
-        logging.info("Firebase connected successfully")
+        logging.info("Firebase connected!")
     except Exception as e:
         logging.error(f"Firebase init error: {e}")
     except Exception as e:
