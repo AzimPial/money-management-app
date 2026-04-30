@@ -19,13 +19,33 @@ logging.basicConfig(level=logging.INFO)
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
+import os
 
-cred = credentials.Certificate('firebase-service-account.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Read credentials from environment variable or local file
+creds_json = os.environ.get('FIREBASE_CREDS')
+if creds_json:
+    cred_dict = json.loads(creds_json)
+    cred = credentials.Certificate(cred_dict)
+else:
+    try:
+        cred = credentials.Certificate('firebase-service-account.json')
+    except:
+        cred = None
+
+if cred:
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+else:
+    db = None
 
 def get_db():
     return db
+
+def check_db():
+    if db is None:
+        return "Firebase not configured. Set FIREBASE_CREDS environment variable."
+    return None
 
 def login_required(f):
     @wraps(f)
@@ -47,6 +67,10 @@ def get_user_group_id(username):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    db_error = check_db()
+    if db_error:
+        return render_template('login.html', error=db_error, is_register=True)
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
