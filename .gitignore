@@ -2,6 +2,7 @@ venv/
 *.pyc
 __pycache__/
 expenses.json
-.DS_Store
+.D_Store
 users.json
 groups.json
+firebase-service-account.json

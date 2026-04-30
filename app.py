@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, g
 from functools import wraps
 import json
 import os
@@ -6,36 +6,26 @@ import logging
 import random
 import string
 import uuid
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_key_for_demo'
+app.secret_key = 'super_secret_key_for_demo_persistent_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = 31536000  # 1 year
+app.config['SESSION_COOKIE_NAME'] = 'synccent_session'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False  # Set True for HTTPS production
 
 logging.basicConfig(level=logging.INFO)
 
-DATA_FILE = 'expenses.json'
-USERS_FILE = 'users.json'
-GROUPS_FILE = 'groups.json'
+import firebase_admin
+from firebase_admin import credentials, firestore
 
-def load_data(filename):
-    try:
-        if os.path.exists(filename):
-            with open(filename, 'r') as f:
-                content = f.read()
-                if not content:
-                    return [] if filename == DATA_FILE else {}
-                return json.loads(content)
-    except Exception as e:
-        app.logger.error(f"Error loading {filename}: {e}")
-        return [] if filename == DATA_FILE else {}
-    return [] if filename == DATA_FILE else {}
+cred = credentials.Certificate('firebase-service-account.json')
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
-def save_data(filename, data):
-    try:
-        with open(filename, 'w') as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        app.logger.error(f"Error saving {filename}: {e}")
+def get_db():
+    return db
 
 def login_required(f):
     @wraps(f)
@@ -48,6 +38,13 @@ def login_required(f):
 def generate_invite_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
+def get_user_group_id(username):
+    users_ref = db.collection('users').document(username)
+    user_doc = users_ref.get()
+    if user_doc.exists:
+        return user_doc.to_dict().get('group_id')
+    return None
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -57,14 +54,16 @@ def register():
         if not username or not password:
             return render_template('login.html', error="Please enter both username and password", is_register=True)
 
-        users = load_data(USERS_FILE)
+        users_ref = db.collection('users')
+        existing = users_ref.document(username).get()
 
-        if username in users:
+        if existing.exists:
             return render_template('login.html', error="Username already exists", is_register=True)
 
-        # Create new user
-        users[username] = {'password': password}
-        save_data(USERS_FILE, users)
+        users_ref.document(username).set({
+            'username': username,
+            'password': password
+        })
         session['username'] = username
         session.permanent = True
         return redirect(url_for('index'))
@@ -79,14 +78,17 @@ def login():
         if not username or not password:
             return render_template('login.html', error="Please enter both username and password", is_register=False)
 
-        users = load_data(USERS_FILE)
+        users_ref = db.collection('users').document(username)
+        user_doc = users_ref.get()
 
-        if username in users and users[username]['password'] == password:
-            session['username'] = username
-            session.permanent = True
-            return redirect(url_for('index'))
-        else:
-            return render_template('login.html', error="Invalid username or password", is_register=False)
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            if user_data.get('password') == password:
+                session['username'] = username
+                session.permanent = True
+                return redirect(url_for('index'))
+        
+        return render_template('login.html', error="Invalid username or password", is_register=False)
     return render_template('login.html', is_register=False)
 
 @app.route('/logout')
@@ -99,20 +101,19 @@ def logout():
 def create_group():
     group_name = request.form.get('group_name')
     if group_name:
-        groups = load_data(GROUPS_FILE)
         group_id = str(uuid.uuid4())
         invite_code = generate_invite_code()
 
-        groups[group_id] = {
+        group_data = {
+            'id': group_id,
             'name': group_name,
-            'invite_code': invite_code,
-            'members': [session['username']]
+            'invite_code': invite_code
         }
-        save_data(GROUPS_FILE, groups)
-
-        users = load_data(USERS_FILE)
-        users[session['username']] = {'group_id': group_id}
-        save_data(USERS_FILE, users)
+        db.collection('groups').document(group_id).set(group_data)
+        
+        db.collection('users').document(session['username']).update({
+            'group_id': group_id
+        })
 
     return redirect(url_for('index'))
 
@@ -120,61 +121,57 @@ def create_group():
 @login_required
 def join_group():
     invite_code = request.form.get('invite_code')
-    groups = load_data(GROUPS_FILE)
-
-    for gid, gdata in groups.items():
-        if gdata['invite_code'] == invite_code.upper():
-            users = load_data(USERS_FILE)
-            users[session['username']] = {'group_id': gid}
-            save_data(USERS_FILE, users)
-
-            # Add to group members if not already there
-            if session['username'] not in gdata['members']:
-                gdata['members'].append(session['username'])
-                save_data(GROUPS_FILE, groups)
-
-            return redirect(url_for('index'))
+    
+    groups_ref = db.collection('groups')
+    groups = groups_ref.where('invite_code', '==', invite_code.upper()).stream()
+    
+    group_doc = None
+    for g in groups:
+        group_doc = g
+        break
+    
+    if group_doc:
+        group_id = group_doc.id
+        db.collection('users').document(session['username']).update({
+            'group_id': group_id
+        })
+        return redirect(url_for('index'))
 
     return render_template('group_setup.html', username=session['username'], error="Invalid Invite Code")
 
 @app.route('/')
 @login_required
 def index():
-    users = load_data(USERS_FILE)
     username = session['username']
-    group_id = users.get(username, {}).get('group_id')
-    
+    group_id = get_user_group_id(username)
+
     if not group_id:
         return render_template('group_setup.html', username=username)
-        
-    groups = load_data(GROUPS_FILE)
-    group_data = groups.get(group_id, {})
-    
-    all_expenses = load_data(DATA_FILE)
-    # Filter expenses by group_id
-    group_expenses = [e for e in all_expenses if e.get('group_id') == group_id]
-    
-    total = 0
-    for e in group_expenses:
-        try:
-            total += float(e.get('amount', 0))
-        except (ValueError, TypeError):
-            continue
-            
-    return render_template('index.html', 
-                           expenses=group_expenses, 
-                           total=total, 
-                           username=username,
-                           group_name=group_data.get('name', 'My Group'),
-                           invite_code=group_data.get('invite_code', 'N/A'))
 
-from datetime import datetime
+    group_doc = db.collection('groups').document(group_id).get()
+    group = group_doc.to_dict() if group_doc.exists else None
+
+    expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
+    expenses = [e.to_dict() for e in expenses_ref.stream()]
+
+    expenses_sorted = sorted(expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+
+    total = sum(e.get('amount', 0) for e in expenses)
+
+    return render_template('index.html',
+                         expenses=expenses_sorted,
+                         total=total,
+                         username=username,
+                         group_name=group['name'] if group else 'My Group',
+                         invite_code=group['invite_code'] if group else 'N/A')
 
 @app.route('/add', methods=['POST'])
 @login_required
 def add_expense():
-    users = load_data(USERS_FILE)
-    group_id = users.get(session['username'], {}).get('group_id')
+    username = session['username']
+    user_doc = db.collection('users').document(username).get()
+    user_data = user_doc.to_dict()
+    group_id = user_data.get('group_id')
 
     if not group_id:
         return redirect(url_for('index'))
@@ -184,38 +181,41 @@ def add_expense():
     category = request.form.get('category')
 
     if description and amount:
-        expenses = load_data(DATA_FILE)
-        expenses.append({
-            'id': str(uuid.uuid4()),
+        expense_id = str(uuid.uuid4())
+        expense_data = {
+            'id': expense_id,
             'group_id': group_id,
             'description': description,
-            'amount': amount,
+            'amount': float(amount),
             'category': category or 'General',
-            'paid_by': session['username'],
+            'paid_by': username,
             'created_at': datetime.now().isoformat()
-        })
-        save_data(DATA_FILE, expenses)
+        }
+        db.collection('expenses').document(expense_id).set(expense_data)
+    
     return redirect(url_for('index'))
 
 @app.route('/delete_expense/<expense_id>', methods=['POST'])
 @login_required
 def delete_expense(expense_id):
-    users = load_data(USERS_FILE)
-    group_id = users.get(session['username'], {}).get('group_id')
+    username = session['username']
+    user_doc = db.collection('users').document(username).get()
+    user_data = user_doc.to_dict()
+    group_id = user_data.get('group_id')
 
     if not group_id:
         return redirect(url_for('index'))
 
-    expenses = load_data(DATA_FILE)
-    expenses = [e for e in expenses if e.get('id') != expense_id]
-    save_data(DATA_FILE, expenses)
+    db.collection('expenses').document(expense_id).delete()
     return redirect(url_for('index'))
 
 @app.route('/edit_expense/<expense_id>', methods=['POST'])
 @login_required
 def edit_expense(expense_id):
-    users = load_data(USERS_FILE)
-    group_id = users.get(session['username'], {}).get('group_id')
+    username = session['username']
+    user_doc = db.collection('users').document(username).get()
+    user_data = user_doc.to_dict()
+    group_id = user_data.get('group_id')
 
     if not group_id:
         return redirect(url_for('index'))
@@ -224,55 +224,60 @@ def edit_expense(expense_id):
     amount = request.form.get('amount')
     category = request.form.get('category')
 
-    expenses = load_data(DATA_FILE)
-    for expense in expenses:
-        if expense.get('id') == expense_id:
-            expense['description'] = description
-            expense['amount'] = amount
-            expense['category'] = category or 'General'
-            break
-    save_data(DATA_FILE, expenses)
+    expense_ref = db.collection('expenses').document(expense_id)
+    expense_doc = expense_ref.get()
+    
+    if expense_doc.exists:
+        update_data = {}
+        if description:
+            update_data['description'] = description
+        if amount:
+            update_data['amount'] = float(amount)
+        if category:
+            update_data['category'] = category
+        
+        if update_data:
+            expense_ref.update(update_data)
+    
     return redirect(url_for('index'))
 
 @app.route('/members')
 @login_required
 def view_members():
-    users = load_data(USERS_FILE)
     username = session['username']
-    group_id = users.get(username, {}).get('group_id')
+    user_doc = db.collection('users').document(username).get()
+    user_data = user_doc.to_dict()
+    group_id = user_data.get('group_id')
 
     if not group_id:
         return redirect(url_for('index'))
 
-    groups = load_data(GROUPS_FILE)
-    group_data = groups.get(group_id, {})
+    group_doc = db.collection('groups').document(group_id).get()
+    group = group_doc.to_dict() if group_doc.exists else {}
+
+    members_ref = db.collection('users').where('group_id', '==', group_id)
+    members = [u.to_dict().get('username') for u in members_ref.stream()]
 
     return render_template('members.html',
-                           members=group_data.get('members', []),
-                           group_name=group_data.get('name', 'My Group'),
-                           username=username,
-                           invite_code=group_data.get('invite_code', 'N/A'))
+                         members=members,
+                         group_name=group.get('name', 'My Group'),
+                         username=username,
+                         invite_code=group.get('invite_code', 'N/A'))
 
 @app.route('/leave_group', methods=['POST'])
 @login_required
 def leave_group():
-    users = load_data(USERS_FILE)
     username = session['username']
-    group_id = users.get(username, {}).get('group_id')
+    user_doc = db.collection('users').document(username).get()
+    user_data = user_doc.to_dict()
+    group_id = user_data.get('group_id')
 
     if not group_id:
         return redirect(url_for('index'))
 
-    # Remove user from group
-    users[username]['group_id'] = None
-    save_data(USERS_FILE, users)
-
-    # Remove from members list
-    groups = load_data(GROUPS_FILE)
-    if group_id in groups:
-        if username in groups[group_id]['members']:
-            groups[group_id]['members'].remove(username)
-        save_data(GROUPS_FILE, groups)
+    db.collection('users').document(username).update({
+        'group_id': firestore.DELETE_FIELD
+    })
 
     return redirect(url_for('index'))
 
