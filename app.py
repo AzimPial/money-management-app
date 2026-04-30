@@ -40,10 +40,11 @@ if project_id and private_key and client_email:
     except Exception as e:
         logging.error(f"Method 1 failed: {e}")
 
-# Method 2: Try from file (for local dev)
-if not creds and os.path.exists('firebase-service-account.json'):
+# Method 2: Try from embedded Python config
+if not creds:
     try:
-        creds = credentials.Certificate('firebase-service-account.json')
+        from firebase_config import get_firebase_creds
+        creds = credentials.Certificate(get_firebase_creds())
     except Exception as e:
         logging.error(f"Method 2 failed: {e}")
 
@@ -52,7 +53,6 @@ if creds:
         if not firebase_admin._apps:
             firebase_admin.initialize_app(creds)
         db = firestore.client()
-        logging.info("Firebase connected!")
     except Exception as e:
         logging.error(f"Firebase init error: {e}")
     except Exception as e:
