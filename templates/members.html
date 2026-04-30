@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Members - SyncCent</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .invite-box {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .invite-code {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 4px;
+            margin: 1rem 0;
+        }
+
+        .members-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-right: 1rem;
+        }
+
+        .member-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .member-you {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .leave-btn {
+            background-color: var(--danger);
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ group_name }} Members</h1>
+            <a href="/logout" class="logout-link">Logout</a>
+        </header>
+
+        <a href="/" class="back-link">&larr; Back to Home</a>
+
+        <div class="card invite-box">
+            <h3 style="margin-top: 0;">Share this code to invite others</h3>
+            <div class="invite-code">{{ invite_code }}</div>
+            <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0;">Give this code to your partner, family, or roommates</p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top: 0; margin-bottom: 1rem;">Group Members ({{ members|length }})</h3>
+            <ul class="members-list">
+                {% for member in members %}
+                <li class="member-item">
+                    <div class="member-avatar">{{ member[0]|upper }}</div>
+                    <span class="member-name">{{ member }}</span>
+                    {% if member == username %}
+                    <span class="member-you">You</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <form action="/leave_group" method="POST" onsubmit="return confirm('Are you sure you want to leave this group? You will need a new invite code to rejoin.');">
+                <button type="submit" class="leave-btn">Leave Group</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

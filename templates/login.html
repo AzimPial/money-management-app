@@ -77,14 +77,19 @@
             margin-bottom: 1rem;
         }
 
-        .toggle-text {
-            text-align: center;
+        .credentials {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
             font-size: 0.875rem;
+            text-align: center;
         }
 
-        .toggle-text a {
-            color: var(--primary);
-            text-decoration: none;
+        .credentials code {
+            background: #e2e8f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
             font-weight: 600;
         }
     </style>
@@ -92,24 +97,24 @@
 <body>
     <div class="container">
         <div class="card">
-            <h2 id="form-title">Login</h2>
+            <h2 id="form-title">{% if is_register %}Register{% else %}Login{% endif %}</h2>
             {% if error %}
             <div class="error">{{ error }}</div>
             {% endif %}
-            <form id="auth-form" action="/login" method="POST">
+            <form id="auth-form" action="{% if is_register %}/register{% else %}/login{% endif %}" method="POST">
                 <input type="text" name="username" placeholder="Username" required>
                 <input type="password" name="password" placeholder="Password" required>
-                <button type="submit" id="submit-btn">Login</button>
+                <button type="submit" id="submit-btn">{% if is_register %}Register{% else %}Login{% endif %}</button>
             </form>
             <div class="toggle-text">
-                <span id="toggle-msg">Don't have an account?</span> 
-                <a href="#" id="toggle-link" onclick="toggleForm()">Register</a>
+                <span id="toggle-msg">{% if is_register %}Already have an account?{% else %}Don't have an account?{% endif %}</span>
+                <a href="#" id="toggle-link" onclick="toggleForm()">{% if is_register %}Login{% else %}Register{% endif %}</a>
             </div>
         </div>
     </div>
 
     <script>
-        let isLogin = true;
+        let isLogin = !{{ is_register|lower }};
         function toggleForm() {
             isLogin = !isLogin;
             const form = document.getElementById('auth-form');
