@@ -8,6 +8,14 @@ import string
 import uuid
 from datetime import datetime
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+import logging
+import random
+import string
+import uuid
+from datetime import datetime
+
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_for_demo_persistent_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = 31536000  # 1 year
@@ -19,25 +27,26 @@ logging.basicConfig(level=logging.INFO)
 
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
-import os
 
-# Read credentials from environment variable or local file
-creds_json = os.environ.get('FIREBASE_CREDS')
-if creds_json:
-    cred_dict = json.loads(creds_json)
-    cred = credentials.Certificate(cred_dict)
-else:
+# Check for Firebase credentials
+db = None
+creds = None
+
+# Try environment variable first
+firebase_creds = os.environ.get('FIREBASE_CREDS')
+if firebase_creds:
+    import io
+    creds = credentials.Certificate(json.loads(firebase_creds))
+# Try local file (for local development)
+elif os.path.exists('firebase-service-account.json'):
+    creds = credentials.Certificate('firebase-service-account.json')
+
+if creds:
     try:
-        cred = credentials.Certificate('firebase-service-account.json')
-    except:
-        cred = None
-
-if cred:
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()
-else:
-    db = None
+        firebase_admin.initialize_app(creds)
+        db = firestore.client()
+    except Exception as e:
+        logging.error(f"Firebase init error: {e}")
 
 def get_db():
     return db
