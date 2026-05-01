@@ -3,155 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SyncCent - Simple Money Manager</title>
+    <title>SyncCent - Money Manager</title>
     <style>
         :root {
             --primary: #6366f1;
+            --primary-light: #818cf8;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
+            --text-light: #64748b;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --food: #ef4444;
+            --transport: #3b82f6;
+            --rent: #8b5cf6;
+            --shopping: #ec4899;
+            --entertainment: #f59e0b;
+            --utilities: #14b8a6;
+            --healthcare: #22c55e;
+            --trip: #6366f1;
+            --others: #64748b;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
+            padding: 1rem;
+            line-height: 1.5;
         }
 
         .container {
             width: 100%;
             max-width: 600px;
+            margin: 0 auto;
         }
 
         header {
-            text-align: center;
-            margin-bottom: 2rem;
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
 
         h1 {
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             margin: 0;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
+        .user-info {
             font-size: 0.875rem;
         }
 
-        .nav-link:hover {
-            text-decoration: underline;
+        .user-info a {
+            color: var(--danger);
+            text-decoration: none;
+            margin-left: 0.5rem;
+        }
+
+        .invite-code {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .invite-code strong {
+            color: var(--text);
+        }
+
+        .period-selector {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            margin-top: 1rem;
+        }
+
+        .period-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .period-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .period-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
 
         .card {
             background: var(--card);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .summary {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+        .total-section {
             text-align: center;
+            padding: 1rem 0;
+        }
+
+        .total-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
         }
 
         .total-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
             color: var(--primary);
-            font-size: 2rem;
         }
 
-        form {
+        .add-form {
             display: grid;
-            gap: 1rem;
+            gap: 0.75rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
 
         input, select {
             padding: 0.75rem;
             border: 1px solid #e2e8f0;
             border-radius: 0.5rem;
-            font-size: 1rem;
+            font-size: 0.875rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
         button {
             background-color: var(--primary);
             color: white;
-            padding: 0.75rem;
+            padding: 0.875rem;
             border: none;
             border-radius: 0.5rem;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
 
         button:hover {
-            opacity: 0.9;
+            background-color: var(--primary-light);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-form input {
+            flex: 1;
+        }
+
+        .search-form button {
+            padding: 0.75rem 1rem;
+        }
+
+        .category-section {
+            margin-top: 1rem;
+        }
+
+        .category-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+        }
+
+        .category-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .category-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .category-name {
+            font-size: 0.875rem;
+            flex: 1;
+        }
+
+        .category-bar-container {
+            flex: 2;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .category-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .category-amount {
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: right;
         }
 
         .expense-list {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
         .expense-item {
             background: white;
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border-left: 4px solid var(--primary);
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-            position: relative;
         }
 
         .expense-info {
-            display: flex;
-            flex-direction: column;
             flex: 1;
         }
 
         .expense-desc {
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .expense-cat {
-            font-size: 0.875rem;
-            color: #64748b;
+        .expense-meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .category-badge {
+            padding: 0.125rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: white;
         }
 
         .expense-amount {
             font-weight: 700;
-            color: var(--text);
+            font-size: 1rem;
+            margin-right: 0.5rem;
         }
 
         .expense-actions {
             display: flex;
-            gap: 0.5rem;
-            margin-left: 1rem;
+            gap: 0.25rem;
         }
 
-        .btn-edit, .btn-delete {
-            padding: 0.5rem;
+        .btn-icon {
+            padding: 0.375rem 0.5rem;
             border: none;
             border-radius: 0.25rem;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
         }
 
         .btn-edit {
@@ -164,12 +317,17 @@
             color: var(--danger);
         }
 
-        .btn-edit:hover {
-            background: #c7d2fe;
+        .btn-add-category {
+            background: transparent;
+            border: 1px dashed #cbd5e1;
+            color: var(--text-light);
+            padding: 0.5rem;
+            font-size: 0.8rem;
         }
 
-        .btn-delete:hover {
-            background: #fecaca;
+        .btn-add-category:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .modal-overlay {
@@ -183,6 +341,7 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
         .modal-overlay.active {
@@ -191,26 +350,22 @@
 
         .modal {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 1rem;
             width: 100%;
             max-width: 400px;
         }
 
         .modal h3 {
-            margin-top: 0;
+            margin: 0 0 1rem;
             color: var(--primary);
-        }
-
-        .modal form {
-            display: grid;
-            gap: 1rem;
         }
 
         .modal-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 0.75rem;
+            margin-top: 1rem;
         }
 
         .btn-cancel {
@@ -218,71 +373,172 @@
             color: var(--text);
         }
 
-        .btn-save {
-            background: var(--primary);
-            color: white;
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .total-amount {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <div class="header-actions">
-                    <h1 style="margin: 0;">{{ group_name }}</h1>
-                    <a href="/members" class="nav-link">View Members</a>
-                </div>
-                <div style="text-align: right;">
-                    <span style="font-weight: 600; margin-right: 10px;">Hi, {{ username }}</span>
-                    <a href="/logout" style="color: #ef4444; text-decoration: none; font-size: 0.875rem;">Logout</a>
+            <div class="header-top">
+                <h1>{{ group_name }}</h1>
+                <div class="user-info">
+                    {{ username }}
+                    <a href="/logout">Logout</a>
                 </div>
             </div>
-            <p style="margin-top: 5px; color: #64748b; font-size: 0.875rem;">Invite Code: <strong style="color: var(--text);">{{ invite_code }}</strong></p>
+            <div class="invite-code">Invite Code: <strong>{{ invite_code }}</strong></div>
+            <div class="nav-links">
+                <a href="/members">Group Members</a>
+                <a href="/?period={{ current_period }}">Dashboard</a>
+            </div>
+            <div class="period-selector">
+                {% for period in periods %}
+                <button class="period-btn {% if period.id == current_period %}active{% endif %}"
+                        onclick="window.location.href='/?period={{ period.id }}'">{{ period.name }}</button>
+                {% endfor %}
+            </div>
         </header>
 
         <div class="card">
-            <div class="summary">
-                Total Monthly Spending: <span class="total-amount">${{ "%.2f"|format(total) }}</span>
+            <div class="total-section">
+                <div class="total-label">Total Spending</div>
+                <div class="total-amount">${{ "%.2f"|format(total) }}</div>
             </div>
-            
-            <form action="/add" method="POST">
-                <input type="text" name="description" placeholder="What did you buy?" required>
-                <input type="number" name="amount" step="0.01" placeholder="How much?" required>
-                <select name="category">
-                    <option value="General">General</option>
-                    <option value="Groceries">Groceries</option>
-                    <option value="Rent">Rent</option>
-                    <option value="Dining">Dining</option>
-                    <option value="Fuel">Fuel</option>
-                    <option value="Shopping">Shopping</option>
-                </select>
-                <button type="submit">Add Expense</button>
+        </div>
+
+        <div class="card">
+            <form action="/add" method="POST" class="add-form">
+                <div class="form-row">
+                    <select name="category" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="amount" step="0.01" placeholder="Amount ($)" required>
+                </div>
+                <input type="text" name="description" placeholder="What did you spend on? (optional)">
+                <div class="form-row">
+                    <input type="date" name="expense_date">
+                    <button type="submit">Add Expense</button>
+                </div>
+            </form>
+            <div style="margin-top: 0.75rem;">
+                <button class="btn-add-category" onclick="document.getElementById('category-modal').classList.add('active')" style="width: 100%;">+ Add Custom Category</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <form action="/search" method="GET" class="search-form">
+                <input type="hidden" name="period" value="{{ current_period }}">
+                <input type="text" name="q" placeholder="Search expenses..." value="{{ search_query or '' }}">
+                <button type="submit">Search</button>
             </form>
         </div>
 
-        <h3>Recent Expenses</h3>
-        <ul class="expense-list">
-            {% for expense in expenses|reverse %}
-            <li class="expense-item">
-                <div class="expense-info">
-                    <span class="expense-desc">{{ expense.description }}</span>
-                    <span class="expense-cat">{{ expense.category }} • Paid by <span style="font-weight:600; color:var(--primary);">{{ expense.paid_by or 'Unknown' }}</span></span>
+        {% if category_totals %}
+        <div class="card">
+            <div class="category-title">Spending by Category</div>
+            <div class="category-grid">
+                {% set max_amount = namespace(value=0) %}
+                {% for cat, amount in category_totals.items() %}
+                    {% if amount > max_amount.value %}{% set max_amount.value = amount %}{% endif %}
+                {% endfor %}
+                {% for cat, amount in category_totals.items() %}
+                <div class="category-item">
+                    <div class="category-dot" style="background: {% if cat == 'Food' %}var(--food){% elif cat == 'Transport' %}var(--transport){% elif cat == 'Rent' %}var(--rent){% elif cat == 'Shopping' %}var(--shopping){% elif cat == 'Entertainment' %}var(--entertainment){% elif cat == 'Utilities' %}var(--utilities){% elif cat == 'Healthcare' %}var(--healthcare){% elif cat == 'Trip' %}var(--trip){% else %}var(--others){% endif %};"></div>
+                    <span class="category-name">{{ cat }}</span>
+                    <div class="category-bar-container">
+                        <div class="category-bar" style="width: {{ (amount / max_amount.value * 100)|round }}%; background: {% if cat == 'Food' %}var(--food){% elif cat == 'Transport' %}var(--transport){% elif cat == 'Rent' %}var(--rent){% elif cat == 'Shopping' %}var(--shopping){% elif cat == 'Entertainment' %}var(--entertainment){% elif cat == 'Utilities' %}var(--utilities){% elif cat == 'Healthcare' %}var(--healthcare){% elif cat == 'Trip' %}var(--trip){% else %}var(--others){% endif %};"></div>
+                    </div>
+                    <span class="category-amount">${{ "%.0f"|format(amount) }}</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <h3 style="margin: 1rem 0 0.5rem; color: var(--text-light); font-size: 0.9rem;">
+            {% if search_query %}Search Results{% else %}Recent Expenses{% endif %}
+        </h3>
+        <ul class="expense-list">
+            {% for expense in expenses %}
+            <li class="expense-item" style="border-left-color: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">
+                <div class="expense-info">
+                    <div class="expense-desc">{{ expense.description or 'No description' }}</div>
+                    <div class="expense-meta">
+                        <span class="category-badge" style="background: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">{{ expense.category }}</span>
+                        <span>{{ expense.paid_by }}</span>
+                        <span>{{ expense.created_at[:10] if expense.created_at else '' }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center;">
                     <span class="expense-amount">${{ "%.2f"|format(expense.amount|float) }}</span>
                     <div class="expense-actions">
-                        <button class="btn-edit" onclick="openEditModal('{{ expense.id }}', '{{ expense.description }}', '{{ expense.amount }}', '{{ expense.category }}')">Edit</button>
+                        <button class="btn-icon btn-edit" onclick="openEditModal('{{ expense.id }}', '{{ expense.description }}', '{{ expense.amount }}', '{{ expense.category }}', '{{ expense.created_at[:10] if expense.created_at else '' }}')">Edit</button>
                         <form action="/delete_expense/{{ expense.id }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this expense?');">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-icon btn-delete">X</button>
                         </form>
                     </div>
                 </div>
             </li>
             {% endfor %}
             {% if not expenses %}
-            <p style="text-align: center; color: #94a3b8;">No expenses yet. Add your first one above!</p>
+            <div class="empty-state">
+                <p>No expenses yet. Add your first one above!</p>
+            </div>
             {% endif %}
         </ul>
+
+        {% if search_query %}
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="/?period={{ current_period }}" style="color: var(--primary);">Clear Search</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal-overlay" id="category-modal">
+        <div class="modal">
+            <h3>Add Custom Category</h3>
+            <form action="/add_category" method="POST">
+                <input type="text" name="new_category" placeholder="Category name" required>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('category-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn-save">Add</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Edit Modal -->
@@ -290,30 +546,27 @@
         <div class="modal">
             <h3>Edit Expense</h3>
             <form id="edit-form" method="POST">
-                <input type="text" name="description" id="edit-description" placeholder="Description" required>
+                <select name="category" id="edit-category" required></select>
                 <input type="number" name="amount" id="edit-amount" step="0.01" placeholder="Amount" required>
-                <select name="category" id="edit-category">
-                    <option value="General">General</option>
-                    <option value="Groceries">Groceries</option>
-                    <option value="Rent">Rent</option>
-                    <option value="Dining">Dining</option>
-                    <option value="Fuel">Fuel</option>
-                    <option value="Shopping">Shopping</option>
-                </select>
+                <input type="text" name="description" id="edit-description" placeholder="Description">
+                <input type="date" name="expense_date" id="edit-date">
                 <div class="modal-buttons">
                     <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn-save">Save Changes</button>
+                    <button type="submit" class="btn-save">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function openEditModal(id, desc, amount, category) {
+        const categories = {{ categories|tojson }};
+
+        function openEditModal(id, desc, amount, category, date) {
             document.getElementById('edit-form').action = '/edit_expense/' + id;
-            document.getElementById('edit-description').value = desc;
+            document.getElementById('edit-category').innerHTML = categories.map(c => '<option value="' + c + '" ' + (c === category ? 'selected' : '') + '>' + c + '</option>').join('');
             document.getElementById('edit-amount').value = amount;
-            document.getElementById('edit-category').value = category || 'General';
+            document.getElementById('edit-description').value = desc || '';
+            document.getElementById('edit-date').value = date;
             document.getElementById('edit-modal').classList.add('active');
         }
 
@@ -321,11 +574,8 @@
             document.getElementById('edit-modal').classList.remove('active');
         }
 
-        // Close modal when clicking outside
         document.getElementById('edit-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
+            if (e.target === this) closeEditModal();
         });
     </script>
 </body>
