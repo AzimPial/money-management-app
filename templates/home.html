@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncCent - Choose Mode</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 0 0 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .user-greeting {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .user-greeting strong {
+            color: var(--primary);
+        }
+
+        .options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option-card {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px -2px rgba(0,0,0,0.15);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .option-desc {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .logout-link {
+            display: block;
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .logout-link:hover {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SyncCent</h1>
+            <p class="subtitle">Track your expenses your way</p>
+        </header>
+
+        <div class="user-greeting">
+            Welcome, <strong>{{ username }}</strong>!
+        </div>
+
+        <div class="options">
+            <a href="/personal" class="option-card">
+                <div class="option-icon">👤</div>
+                <div class="option-title">My Expenses</div>
+                <div class="option-desc">Track your personal expenses privately. Only you can see your data.</div>
+            </a>
+
+            <a href="/" class="option-card">
+                <div class="option-icon">👥</div>
+                <div class="option-title">Group Expenses</div>
+                <div class="option-desc">Share and track expenses with family, friends, or roommates.</div>
+            </a>
+        </div>
+
+        <a href="/logout" class="logout-link">Logout</a>
+    </div>
+</body>
+</html>
