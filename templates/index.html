@@ -630,7 +630,9 @@
         </div>
         {% endif %}
 
-        <div class="section-title">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</div>
+        <div class="section-title" style="margin-top: 1rem;">
+            {{ group_name }} - {% if search_query %}Search Results{% else %}Recent Expenses{% endif %}
+        </div>
         <ul class="expense-list">
             {% for expense in expenses %}
             <li class="expense-item" style="border-left-color: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">
