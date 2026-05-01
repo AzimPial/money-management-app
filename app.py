@@ -502,8 +502,12 @@ def index():
         group_doc = db.collection('groups').document(group_id).get()
         group = group_doc.to_dict() if group_doc.exists else None
 
+        members_ref = db.collection('users').where('group_id', '==', group_id)
+        members = [u.to_dict().get('username') for u in members_ref.stream()]
+
         current_period = get_current_period()
         period_id = request.args.get('period', current_period['id'])
+        member_filter = request.args.get('member', '')
 
         expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
@@ -524,8 +528,16 @@ def index():
             else:
                 expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
 
+        if member_filter:
+            expenses_sorted = [e for e in expenses_sorted if e.get('paid_by') == member_filter]
+
         total = sum(e.get('amount', 0) for e in expenses_sorted)
         category_totals = get_period_totals(expenses_sorted)
+
+        member_totals = {}
+        for e in expenses_sorted:
+            p = e.get('paid_by', 'Unknown')
+            member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
 
         custom_cats = get_group_categories(group_id)
 
@@ -545,6 +557,9 @@ def index():
                          categories=custom_cats,
                          current_period=period_id,
                          periods=periods,
+                         members=members,
+                         member_filter=member_filter,
+                         member_totals=member_totals,
                          username=username,
                          group_name=group['name'] if group else 'My Group',
                          invite_code=group['invite_code'] if group else 'N/A')
@@ -672,10 +687,14 @@ def search_expenses():
     query = request.args.get('q', '').lower()
     current_period = get_current_period()
     period_id = request.args.get('period', current_period['id'])
+    member_filter = request.args.get('member', '')
 
     try:
         group_doc = db.collection('groups').document(group_id).get()
         group = group_doc.to_dict() if group_doc.exists else None
+
+        members_ref = db.collection('users').where('group_id', '==', group_id)
+        members = [u.to_dict().get('username') for u in members_ref.stream()]
 
         expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
@@ -696,11 +715,20 @@ def search_expenses():
             else:
                 expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
 
+        if member_filter:
+            expenses_sorted = [e for e in expenses_sorted if e.get('paid_by') == member_filter]
+
         if query:
             expenses_sorted = [e for e in expenses_sorted if query in e.get('description', '').lower() or query in e.get('category', '').lower()]
 
         total = sum(e.get('amount', 0) for e in expenses_sorted)
         category_totals = get_period_totals(expenses_sorted)
+
+        member_totals = {}
+        for e in expenses_sorted:
+            p = e.get('paid_by', 'Unknown')
+            member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
+
         custom_cats = get_group_categories(group_id)
 
         periods = []
@@ -719,6 +747,9 @@ def search_expenses():
                          categories=custom_cats,
                          current_period=period_id,
                          periods=periods,
+                         members=members,
+                         member_filter=member_filter,
+                         member_totals=member_totals,
                          search_query=query,
                          username=username,
                          group_name=group['name'] if group else 'My Group',

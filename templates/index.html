@@ -478,6 +478,48 @@
             background: #cbd5e1;
         }
 
+        .member-filter {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.75rem 1.25rem;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .member-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .member-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .member-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .member-amount {
+            font-size: 0.7rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
         @media (max-width: 480px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -502,9 +544,24 @@
     </div>
 
     <div class="sub-nav">
-        <a href="/?period={{ current_period }}">Dashboard</a>
+        <a href="/?period={{ current_period }}{% if member_filter %}&member={{ member_filter }}{% endif %}" class="{% if not member_filter %}active{% endif %}">Dashboard</a>
         <a href="/members">Members</a>
+        {% if member_filter %}
+        <a href="/?period={{ current_period }}" style="color: var(--primary);">Clear Filter</a>
+        {% endif %}
     </div>
+
+    {% if members|length > 1 %}
+    <div class="member-filter">
+        {% for member in members %}
+        <button class="member-btn {% if member_filter == member %}active{% endif %}"
+                onclick="window.location.href='/?period={{ current_period }}&member={{ member }}'">
+            {{ member }}
+            <span class="member-amount">${{ "%.0f"|format(member_totals.get(member, 0)) }}</span>
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="container">
         <div class="invite-box">
