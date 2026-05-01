@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Groups - SyncCent</title>
+    <style>
+        :root{--p:#6366f1;--pd:#4f46e5;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--tl:#64748b;--b:#e2e8f0;--g:#22c55e;--r:#ef4444}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);-webkit-font-smoothing:antialiased}
+        .top-bar{background:var(--p);color:#fff;padding:.875rem 1rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+        .top-bar a{color:#fff;text-decoration:none;font-size:1.5rem;line-height:1}
+        .top-bar h1{font-size:1.1rem;font-weight:600;flex:1}
+        .c{max-width:600px;margin:0 auto;padding:1rem}
+        .card{background:var(--c);border-radius:16px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+        .bt{display:flex;gap:.75rem;margin-bottom:1rem}
+        .btn{flex:1;padding:.875rem;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none}
+        .btn:hover{background:var(--pd)}
+        .btn-create{background:var(--g)}
+        .btn-create:hover{background:#16a34a}
+        .btn-join{background:var(--p)}
+        .st{font-size:.9rem;font-weight:600;color:var(--tl);margin-bottom:.75rem}
+        .gl{list-style:none}
+        .gi{background:var(--c);border-radius:12px;padding:1rem;margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+        .gi-info{flex:1}
+        .gi-name{font-weight:600;font-size:1rem;margin-bottom:.25rem}
+        .gi-code{font-size:.8rem;color:var(--tl)}
+        .gi-btn{background:var(--p);color:#fff;padding:.5rem 1rem;border-radius:8px;text-decoration:none;font-size:.85rem;font-weight:500}
+        .gi-btn:hover{background:var(--pd)}
+        .mo{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+        .mo.active{display:flex}
+        .m{background:#fff;padding:1.5rem;border-radius:16px;width:100%;max-width:400px}
+        .m h3{margin:0 0 1rem;color:var(--p);font-size:1.1rem}
+        .m input{width:100%;padding:.875rem;border:1px solid var(--b);border-radius:12px;font-size:1rem;margin-bottom:.75rem}
+        .m input:focus{outline:none;border-color:var(--p)}
+        .mb{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+        .bc{background:var(--b);color:var(--t);padding:.875rem;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer}
+        .bc:hover{background:#cbd5e1}
+        .es{text-align:center;padding:2rem;color:var(--tl)}
+    </style>
+</head>
+<body>
+    <div class="top-bar"><a href="/home">←</a><h1>My Groups</h1></div>
+    <div class="c">
+        <div class="bt"><a href="/create_new_group" class="btn btn-create">+ Create New Group</a><a href="/join_group_page" class="btn btn-join">Join Group</a></div>
+        {% if current_group %}
+        <div class="card"><div class="st">Current Group</div><div class="gi"><div class="gi-info"><div class="gi-name">{{ current_group.name }}</div><div class="gi-code">Code: {{ current_group.invite_code }}</div></div><a href="/" class="gi-btn">Open</a></div></div>{% endif %}
+        {% if my_groups|length > 0 %}
+        <div class="card"><div class="st">My Groups ({{ my_groups|length }})</div><ul class="gl">{% for g in my_groups %}<li class="gi"><div class="gi-info"><div class="gi-name">{{ g.name }}</div><div class="gi-code">Code: {{ g.invite_code }}</div></div><a href="/?group={{ g.id }}" class="gi-btn">Open</a></li>{% endfor %}</ul></div>{% endif %}
+        {% if not current_group and my_groups|length == 0 %}<div class="es"><p>You haven't joined any group yet.<br>Create or join one above!</p></div>{% endif %}
+    </div>
+    <div class="mo" id="jm"><div class="m"><h3>Join Group</h3><form method="POST" action="/join_group"><input type="text" name="invite_code" placeholder="Enter invite code" required style="text-transform:uppercase"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('jm').classList.remove('active')">Cancel</button><button type="submit" class="btn">Join</button></div></form></div></div>
+    <script>function oj(){document.getElementById('jm').classList.add('active')}</script>
+</body>
+</html>

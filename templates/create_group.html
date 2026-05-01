@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Group - SyncCent</title>
+    <style>
+        :root{--p:#6366f1;--pd:#4f46e5;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--tl:#64748b;--b:#e2e8f0;--g:#22c55e}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);-webkit-font-smoothing:antialiased}
+        .top-bar{background:var(--p);color:#fff;padding:.875rem 1rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+        .top-bar a{color:#fff;text-decoration:none;font-size:1.5rem;line-height:1}
+        .top-bar h1{font-size:1.1rem;font-weight:600}
+        .c{max-width:400px;margin:0 auto;padding:1rem}
+        .card{background:var(--c);border-radius:16px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+        .st{font-size:1.1rem;font-weight:600;margin-bottom:1rem}
+        input{width:100%;padding:.875rem;border:1px solid var(--b);border-radius:12px;font-size:1rem;margin-bottom:1rem}
+        input:focus{outline:none;border-color:var(--p)}
+        button{width:100%;padding:.875rem;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer}
+        button:hover{background:#16a34a}
+    </style>
+</head>
+<body>
+    <div class="top-bar"><a href="/groups">←</a><h1>Create Group</h1></div>
+    <div class="c">
+        <div class="card">
+            <div class="st">New Group Name</div>
+            <form method="POST">
+                <input type="text" name="group_name" placeholder="e.g., My Family, Roommates" required autofocus>
+                <button type="submit">Create Group</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

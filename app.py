@@ -228,6 +228,63 @@ def home():
                          has_group=group_id is not None,
                          groups=groups)
 
+@app.route('/groups')
+@login_required
+def groups_page():
+    username = session['username']
+    group_id = get_user_group_id(username)
+
+    current_group = None
+    if group_id:
+        try:
+            group_doc = db.collection('groups').document(group_id).get()
+            if group_doc.exists:
+                current_group = group_doc.to_dict()
+                current_group['id'] = group_id
+        except:
+            pass
+
+    return render_template('groups.html',
+                         username=username,
+                         current_group=current_group,
+                         my_groups=[])
+
+@app.route('/create_new_group', methods=['GET', 'POST'])
+@login_required
+def create_new_group():
+    db_error = check_db()
+    if db_error:
+        return render_template('home.html', error=db_error)
+
+    username = session['username']
+
+    if request.method == 'POST':
+        group_name = request.form.get('group_name', '').strip()
+        if group_name:
+            group_id = str(uuid.uuid4())
+            invite_code = generate_invite_code()
+            try:
+                db.collection('groups').document(group_id).set({
+                    'id': group_id,
+                    'name': group_name,
+                    'invite_code': invite_code,
+                    'created_by': username,
+                    'created_at': datetime.now().isoformat()
+                })
+                db.collection('users').document(username).update({
+                    'group_id': group_id
+                })
+                return redirect(url_for('groups_page'))
+            except Exception as e:
+                logging.error(f"Create group error: {e}")
+
+    return render_template('create_group.html', username=username)
+
+@app.route('/join_group_page')
+@login_required
+def join_group_page():
+    return render_template('join_group.html')
+
 @app.route('/personal')
 @login_required
 def personal():
