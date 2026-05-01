@@ -5,597 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Expenses - SyncCent</title>
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #a5b4fc;
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --food: #ef4444;
-            --transport: #3b82f6;
-            --rent: #8b5cf6;
-            --shopping: #ec4899;
-            --entertainment: #f59e0b;
-            --utilities: #14b8a6;
-            --healthcare: #22c55e;
-            --trip: #6366f1;
-            --others: #64748b;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 0;
-        }
-
-        .top-bar {
-            background: var(--primary);
-            color: white;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-        }
-
-        .back-btn {
-            color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-
-        .back-btn:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        .top-bar h1 {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 1.25rem;
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .total-section {
-            text-align: center;
-            padding: 0.5rem 0 1rem;
-        }
-
-        .total-label {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            margin-bottom: 0.25rem;
-        }
-
-        .total-amount {
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .form-group {
-            margin-bottom: 0.75rem;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            background: var(--card);
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        select {
-            cursor: pointer;
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px dashed var(--border);
-            color: var(--text-light);
-            padding: 0.75rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: transparent;
-            transform: none;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .search-box input {
-            flex: 1;
-        }
-
-        .search-box button {
-            width: auto;
-            padding: 0 1.25rem;
-        }
-
-        .section-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 0.75rem;
-        }
-
-        .category-grid {
-            display: grid;
-            gap: 0.5rem;
-        }
-
-        .category-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .category-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .category-name {
-            font-size: 0.9rem;
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .category-bar-container {
-            flex: 2;
-            height: 10px;
-            background: var(--border);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .category-bar {
-            height: 100%;
-            border-radius: 5px;
-            transition: width 0.3s;
-        }
-
-        .category-amount {
-            font-size: 0.85rem;
-            font-weight: 600;
-            min-width: 55px;
-            text-align: right;
-        }
-
-        .expense-list {
-            list-style: none;
-        }
-
-        .expense-item {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-            border-left: 4px solid var(--primary);
-            transition: transform 0.2s;
-        }
-
-        .expense-item:hover {
-            transform: translateX(2px);
-        }
-
-        .expense-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .expense-desc {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .expense-meta {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .category-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .expense-right {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-shrink: 0;
-        }
-
-        .expense-amount {
-            font-weight: 700;
-            font-size: 1.05rem;
-            white-space: nowrap;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .btn-small {
-            padding: 0.4rem 0.6rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-edit {
-            background: #e0e7ff;
-            color: var(--primary);
-        }
-
-        .btn-edit:hover {
-            background: #c7d2fe;
-        }
-
-        .btn-delete {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .btn-delete:hover {
-            background: #fecaca;
-        }
-
-        .period-selector {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding: 0.5rem 0;
-            margin-top: 0.5rem;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .period-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--border);
-            background: white;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .period-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .period-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-light);
-        }
-
-        .empty-state p {
-            font-size: 0.95rem;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .modal h3 {
-            margin: 0 0 1rem;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        .modal-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .btn-cancel {
-            background: var(--border);
-            color: var(--text);
-        }
-
-        .btn-cancel:hover {
-            background: #cbd5e1;
-        }
-
-        @media (max-width: 480px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .total-amount {
-                font-size: 2rem;
-            }
-            .top-bar {
-                padding: 0.875rem 1rem;
-            }
-            .container {
-                padding: 1rem;
-            }
-        }
+        :root{--p:#6366f1;--pd:#4f46e5;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--tl:#64748b;--b:#e2e8f0;--r:#ef4444;--tr:#3b82f6}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);-webkit-font-smoothing:antialiased}
+        .top-bar{background:var(--p);color:#fff;padding:.875rem 1rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+        .top-bar a{color:#fff;text-decoration:none;font-size:1.5rem;line-height:1}
+        .top-bar h1{font-size:1.1rem;font-weight:600}
+        .container{max-width:600px;margin:0 auto;padding:1rem}
+        .card{background:var(--c);border-radius:16px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+        .ts{text-align:center;padding:.5rem 0 .75rem}
+        .tl{font-size:.85rem;color:var(--tl);margin-bottom:.25rem}
+        .ta{font-size:2rem;font-weight:700;color:var(--p)}
+        .ps{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0;-webkit-overflow-scrolling:touch}
+        .pb{padding:.4rem .85rem;border:1px solid var(--b);background:#fff;border-radius:20px;font-size:.75rem;cursor:pointer;white-space:nowrap;transition:all .15s;font-weight:500}
+        .pb:hover{border-color:var(--p);color:var(--p)}
+        .pb.active{background:var(--p);color:#fff;border-color:var(--p)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+        .mb75{margin-bottom:.75rem}
+        input,select{width:100%;padding:.75rem .875rem;border:1px solid var(--b);border-radius:12px;font-size:.95rem;transition:all .2s;background:var(--c)}
+        input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+        button{width:100%;padding:.875rem;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s}
+        button:hover{background:var(--pd)}
+        .btn-secondary{background:0;border:1px dashed var(--b);color:var(--tl);padding:.65rem;font-size:.9rem;margin-top:.5rem}
+        .btn-secondary:hover{border-color:var(--p);color:var(--p);background:0}
+        .sb{display:flex;gap:.5rem;margin-bottom:1rem}
+        .sb input{flex:1}
+        .sb button{width:auto;padding:0 1rem}
+        .st{font-size:.9rem;font-weight:600;color:var(--tl);margin-bottom:.75rem}
+        .cg{display:grid;gap:.5rem}
+        .ci{display:flex;align-items:center;gap:.75rem}
+        .cd{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+        .cn{font-size:.9rem;flex:1;font-weight:500}
+        .cbc{flex:2;height:10px;background:var(--b);border-radius:5px;overflow:hidden}
+        .cb{height:100%;border-radius:5px;transition:width .3s ease}
+        .ca{font-size:.85rem;font-weight:600;min-width:55px;text-align:right}
+        .el{list-style:none}
+        .ei{background:var(--c);border-radius:12px;padding:1rem;margin-bottom:.65rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04);border-left:4px solid var(--p);transition:transform .15s ease}
+        .ei:hover{transform:translateX(2px)}
+        .ef{flex:1;min-width:0}
+        .ed{font-weight:600;font-size:.95rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .em{font-size:.8rem;color:var(--tl);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+        .cbg{padding:.2rem .6rem;border-radius:20px;font-size:.7rem;font-weight:600;color:#fff}
+        .er{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+        .ea{font-weight:700;font-size:1.05rem;white-space:nowrap}
+        .ab{display:flex;gap:.25rem}
+        .bs{padding:.35rem .55rem;border-radius:8px;border:none;cursor:pointer;font-size:.75rem;font-weight:500;transition:all .15s}
+        .bs-edit{background:#e0e7ff;color:var(--p)}
+        .bs-edit:hover{background:#c7d2fe}
+        .bs-del{background:#fee2e2;color:#dc2626}
+        .bs-del:hover{background:#fecaca}
+        .es{text-align:center;padding:2rem 1rem;color:var(--tl)}
+        .mo{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+        .mo.active{display:flex}
+        .m{background:#fff;padding:1.5rem;border-radius:16px;width:100%;max-width:400px}
+        .m h3{margin:0 0 1rem;color:var(--p);font-size:1.1rem}
+        .mb{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1rem}
+        .bc{background:var(--b);color:var(--t)}
+        .bc:hover{background:#cbd5e1}
+        @media (max-width:480px){.form-row{grid-template-columns:1fr}.ta{font-size:1.75rem}}
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <a href="/home" class="back-btn">←</a>
-        <h1>My Expenses</h1>
-    </div>
-
+    <div class="top-bar"><a href="/home">←</a><h1>My Expenses</h1></div>
     <div class="container">
         <div class="card">
-            <div class="total-section">
-                <div class="total-label">Total Spending</div>
-                <div class="total-amount">${{ "%.2f"|format(total) }}</div>
-            </div>
-            <div class="period-selector">
-                {% for period in periods %}
-                <button class="period-btn {% if period.id == current_period %}active{% endif %}"
-                        onclick="window.location.href='/personal?period={{ period.id }}'">{{ period.name }}</button>
-                {% endfor %}
-            </div>
+            <div class="ts"><div class="tl">Total Spending</div><div class="ta">${{ "%.2f"|format(total) }}</div></div>
+            <div class="ps">{% for p in periods %}<button class="pb {% if p.id == current_period %}active{% endif %}" onclick="location.href='/personal?period={{ p.id }}'">{{ p.name }}</button>{% endfor %}</div>
         </div>
-
         <div class="card">
             <form action="/add_personal" method="POST">
-                <div class="form-row">
-                    <select name="category" required>
-                        <option value="">Category</option>
-                        {% for cat in categories %}
-                        <option value="{{ cat }}">{{ cat }}</option>
-                        {% endfor %}
-                    </select>
-                    <input type="number" name="amount" step="0.01" placeholder="Amount ($)" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" name="description" placeholder="What did you spend on? (optional)">
-                </div>
-                <div class="form-row">
-                    <input type="date" name="expense_date">
-                    <button type="submit">Add Expense</button>
-                </div>
+                <div class="form-row mb75"><select name="category" required><option value="">Category</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select><input type="number" name="amount" step="0.01" placeholder="Amount ($)" required></div>
+                <div class="mb75"><input type="text" name="description" placeholder="What did you spend on? (optional)"></div>
+                <div class="form-row"><input type="date" name="expense_date"><button type="submit">Add Expense</button></div>
             </form>
-            <button class="btn-secondary" onclick="document.getElementById('category-modal').classList.add('active')" style="margin-top: 0.75rem;">+ Add Custom Category</button>
+            <button class="btn-secondary" onclick="document.getElementById('cm').classList.add('active')">+ Add Custom Category</button>
         </div>
-
-        <div class="search-box">
-            <form action="/search_personal" method="GET" style="display: flex; gap: 0.5rem; width: 100%;">
-                <input type="hidden" name="period" value="{{ current_period }}">
-                <input type="text" name="q" placeholder="Search..." value="{{ search_query or '' }}">
-                <button type="submit">Search</button>
-            </form>
-        </div>
-
+        <div class="sb"><form method="GET" style="display:flex;gap:.5rem;width:100%"><input type="hidden" name="period" value="{{ current_period }}"><input type="text" name="q" placeholder="Search..." value="{{ search_query or '' }}"><button type="submit">Search</button></form></div>
         {% if category_totals %}
-        <div class="card">
-            <div class="section-title">Spending by Category</div>
-            <div class="category-grid">
-                {% set max_amount = namespace(value=0) %}
-                {% for cat, amount in category_totals.items() %}
-                    {% if amount > max_amount.value %}{% set max_amount.value = amount %}{% endif %}
-                {% endfor %}
-                {% for cat, amount in category_totals.items() %}
-                <div class="category-item">
-                    <div class="category-dot" style="background: {% if cat == 'Food' %}var(--food){% elif cat == 'Transport' %}var(--transport){% elif cat == 'Rent' %}var(--rent){% elif cat == 'Shopping' %}var(--shopping){% elif cat == 'Entertainment' %}var(--entertainment){% elif cat == 'Utilities' %}var(--utilities){% elif cat == 'Healthcare' %}var(--healthcare){% elif cat == 'Trip' %}var(--trip){% else %}var(--others){% endif %};"></div>
-                    <span class="category-name">{{ cat }}</span>
-                    <div class="category-bar-container">
-                        <div class="category-bar" style="width: {{ (amount / max_amount.value * 100)|round }}%; background: {% if cat == 'Food' %}var(--food){% elif cat == 'Transport' %}var(--transport){% elif cat == 'Rent' %}var(--rent){% elif cat == 'Shopping' %}var(--shopping){% elif cat == 'Entertainment' %}var(--entertainment){% elif cat == 'Utilities' %}var(--utilities){% elif cat == 'Healthcare' %}var(--healthcare){% elif cat == 'Trip' %}var(--trip){% else %}var(--others){% endif %};"></div>
-                    </div>
-                    <span class="category-amount">${{ "%.0f"|format(amount) }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="section-title">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</div>
-        <ul class="expense-list">
-            {% for expense in expenses %}
-            <li class="expense-item" style="border-left-color: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">
-                <div class="expense-info">
-                    <div class="expense-desc">{{ expense.description or 'No description' }}</div>
-                    <div class="expense-meta">
-                        <span class="category-badge" style="background: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">{{ expense.category }}</span>
-                        <span>{{ expense.created_at[:10] if expense.created_at else '' }}</span>
-                    </div>
-                </div>
-                <div class="expense-right">
-                    <span class="expense-amount">${{ "%.2f"|format(expense.amount|float) }}</span>
-                    <div class="action-btns">
-                        <button class="btn-small btn-edit" onclick="openEditModal('{{ expense.id }}', '{{ expense.description }}', '{{ expense.amount }}', '{{ expense.category }}', '{{ expense.created_at[:10] if expense.created_at else '' }}')">Edit</button>
-                        <form action="/delete_personal_expense/{{ expense.id }}" method="POST" onsubmit="return confirm('Delete?');">
-                            <button type="submit" class="btn-small btn-delete">X</button>
-                        </form>
-                    </div>
-                </div>
-            </li>
-            {% endfor %}
-            {% if not expenses %}
-            <div class="empty-state">
-                <p>No expenses yet. Add your first one above!</p>
-            </div>
-            {% endif %}
-        </ul>
-
-        {% if search_query %}
-        <div style="text-align: center; margin-top: 1rem;">
-            <a href="/personal?period={{ current_period }}" style="color: var(--primary); font-weight: 500;">Clear Search</a>
-        </div>
-        {% endif %}
+        <div class="card"><div class="st">Spending by Category</div><div class="cg">{% set ma = namespace(v=0) %}{% for c,a in category_totals.items() %}{% if a>ma.v %}{% set ma.v=a %}{% endif %}{% endfor %}{% for c,a in category_totals.items() %}<div class="ci"><div class="cd" style="background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--p){% else %}var(--tl){% endif %})"></div><span class="cn">{{ c }}</span><div class="cbc"><div class="cb" style="width:{{ (a/ma.v*100)|round }}%;background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--p){% else %}var(--tl){% endif %})"></div></div><span class="ca">${{ "%.0f"|format(a) }}</span></div>{% endfor %}</div></div>{% endif %}
+        <div class="st">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</div>
+        <ul class="el">{% for e in expenses %}<li class="ei" style="border-left-color:var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--p){% else %}var(--tl){% endif %})"><div class="ef"><div class="ed">{{ e.description or 'No description' }}</div><div class="em"><span class="cbg" style="background:var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--p){% else %}var(--tl){% endif %})">{{ e.category }}</span><span>{{ e.created_at[:10] if e.created_at else '' }}</span></div></div><div class="er"><span class="ea">${{ "%.2f"|format(e.amount|float) }}</span><div class="ab"><button class="bs bs-edit" onclick="om('{{ e.id }}','{{ e.description }}','{{ e.amount }}','{{ e.category }}','{{ e.created_at[:10] if e.created_at else '' }}')">Edit</button><form method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="bs bs-del">X</button></form></div></div></li>{% endfor %}{% if not expenses %}<div class="es"><p>No expenses yet. Add your first one!</p></div>{% endif %}</ul>{% if search_query %}<div style="text-align:center;margin-top:1rem"><a href="/personal?period={{ current_period }}" style="color:var(--p);font-weight:500">Clear Search</a></div>{% endif %}
     </div>
-
-    <div class="modal-overlay" id="category-modal">
-        <div class="modal">
-            <h3>Add Custom Category</h3>
-            <form action="/add_personal_category" method="POST">
-                <input type="text" name="new_category" placeholder="Category name" required style="width: 100%;">
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="document.getElementById('category-modal').classList.remove('active')">Cancel</button>
-                    <button type="submit">Add</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="edit-modal">
-        <div class="modal">
-            <h3>Edit Expense</h3>
-            <form id="edit-form" method="POST">
-                <select name="category" id="edit-category" required style="width: 100%; margin-bottom: 0.75rem;"></select>
-                <input type="number" name="amount" id="edit-amount" step="0.01" placeholder="Amount" required style="width: 100%; margin-bottom: 0.75rem;">
-                <input type="text" name="description" id="edit-description" placeholder="Description" style="width: 100%; margin-bottom: 0.75rem;">
-                <input type="date" name="expense_date" id="edit-date" style="width: 100%;">
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const categories = {{ categories|tojson }};
-
-        function openEditModal(id, desc, amount, category, date) {
-            document.getElementById('edit-form').action = '/edit_personal_expense/' + id;
-            document.getElementById('edit-category').innerHTML = categories.map(c => '<option value="' + c + '" ' + (c === category ? 'selected' : '') + '>' + c + '</option>').join('');
-            document.getElementById('edit-amount').value = amount;
-            document.getElementById('edit-description').value = desc || '';
-            document.getElementById('edit-date').value = date;
-            document.getElementById('edit-modal').classList.add('active');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.remove('active');
-        }
-
-        document.getElementById('edit-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeEditModal();
-        });
-    </script>
+    <div class="mo" id="cm"><div class="m"><h3>Add Custom Category</h3><form method="POST" action="/add_personal_category"><input type="text" name="new_category" placeholder="Category name" required style="width:100%"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('cm').classList.remove('active')">Cancel</button><button type="submit">Add</button></div></form></div></div>
+    <div class="mo" id="em"><div class="m"><h3>Edit Expense</h3><form id="ef" method="POST"><select name="category" id="ec" required style="width:100%;margin-bottom:.75rem"></select><input type="number" name="amount" id="ea" step="0.01" placeholder="Amount" required style="width:100%;margin-bottom:.75rem"><input type="text" name="description" id="ed" placeholder="Description" style="width:100%;margin-bottom:.75rem"><input type="date" name="expense_date" id="edt" style="width:100%"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('em').classList.remove('active')">Cancel</button><button type="submit">Save</button></div></form></div></div>
+    <script>const c={{ categories|tojson }};function om(id,desc,amt,cat,dt){document.getElementById('ef').action='/edit_personal_expense/'+id;document.getElementById('ec').innerHTML=c.map(x=>'<option value="'+x+'" '+(x===cat?'selected':'')+'>'+x+'</option>').join('');document.getElementById('ea').value=amt;document.getElementById('ed').value=desc||'';document.getElementById('edt').value=dt;document.getElementById('em').classList.add('active')}document.getElementById('em').addEventListener('click',e=>{if(e.target===this)e.target.classList.remove('active')});</script>
 </body>
 </html>
