@@ -540,6 +540,7 @@
     <div class="top-bar">
         <a href="/home" class="back-btn">←</a>
         <h1>{{ group_name }}</h1>
+        <span class="user-name">{{ username }}</span>
     </div>
 
     <div class="sub-nav">
@@ -629,10 +630,7 @@
         </div>
         {% endif %}
 
-        <div class="section-title">
-            <span>{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</span>
-            <span style="color: var(--primary);">{{ username }}</span>
-        </div>
+        <div class="section-title">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</div>
         <ul class="expense-list">
             {% for expense in expenses %}
             <li class="expense-item" style="border-left-color: {% if expense.category == 'Food' %}var(--food){% elif expense.category == 'Transport' %}var(--transport){% elif expense.category == 'Rent' %}var(--rent){% elif expense.category == 'Shopping' %}var(--shopping){% elif expense.category == 'Entertainment' %}var(--entertainment){% elif expense.category == 'Utilities' %}var(--utilities){% elif expense.category == 'Healthcare' %}var(--healthcare){% elif expense.category == 'Trip' %}var(--trip){% else %}var(--others){% endif %};">
