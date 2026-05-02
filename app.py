@@ -352,6 +352,10 @@ def join_group_page():
 @app.route('/personal')
 @login_required
 def personal():
+    db_error = check_db()
+    if db_error:
+        return render_template('personal.html', error=db_error, username=session['username'])
+    
     username = session['username']
     current_period = get_current_period()
     period_id = request.args.get('period', current_period['id'])
@@ -438,6 +442,10 @@ def add_personal_category():
 @app.route('/search_personal')
 @login_required
 def search_personal():
+    db_error = check_db()
+    if db_error:
+        return render_template('personal.html', error=db_error, username=session['username'])
+    
     username = session['username']
     query = request.args.get('q', '').lower()
     current_period = get_current_period()
