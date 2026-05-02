@@ -23,4 +23,4 @@ This is a simplified version of the SyncCent money management app built with Pyt
 - Automatic total calculation.
 - Local data persistence (JSON).
 
-- naimaa
+
