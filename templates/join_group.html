@@ -4,20 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Group - SyncCent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#6366f1;--pd:#4f46e5;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--tl:#64748b;--b:#e2e8f0}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);-webkit-font-smoothing:antialiased}
-        .top-bar{background:var(--p);color:#fff;padding:.875rem 1rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(99,102,241,.3)}
-        .top-bar a{color:#fff;text-decoration:none;font-size:1.5rem;line-height:1}
-        .top-bar h1{font-size:1.1rem;font-weight:600}
-        .c{max-width:400px;margin:0 auto;padding:1rem}
-        .card{background:var(--c);border-radius:16px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-        .st{font-size:1.1rem;font-weight:600;margin-bottom:1rem}
-        input{width:100%;padding:.875rem;border:1px solid var(--b);border-radius:12px;font-size:1.1rem;text-transform:uppercase;letter-spacing:2px;text-align:center;margin-bottom:1rem}
-        input:focus{outline:none;border-color:var(--p)}
-        button{width:100%;padding:.875rem;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer}
-        button:hover{background:var(--pd)}
+        :root { --bg: #F5F0E8; --card: #FFFDF8; --text-main: #2C2416; --text-sub: #7A7067; --border: #E8DFD3; --primary: #2C2416; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #F0EBE3 0%, #F5F0E8 50%, #EBE5DC 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        .top-bar { background: var(--card); color: var(--text-main); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .top-bar a { color: var(--text-main); text-decoration: none; font-size: 1.25rem; }
+        .top-bar h1 { font-size: 1.1rem; font-weight: 600; flex: 1; }
+        .c { max-width: 400px; margin: 0 auto; padding: 1.5rem 1rem; }
+        .card { background: var(--card); border-radius: 24px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+        .st { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 0.875rem; border: 1px solid var(--border); border-radius: 14px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin-bottom: 1rem; background: var(--bg); }
+        input:focus { outline: none; border-color: var(--primary); }
+        button { width: 100%; padding: 1rem; background: var(--primary); color: #fff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>

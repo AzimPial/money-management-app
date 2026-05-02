@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session, g
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from functools import wraps
-import json
 import os
 import logging
 import random
@@ -15,6 +14,10 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 31536000
 app.config['SESSION_COOKIE_NAME'] = 'synccent_session'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,8 +62,6 @@ if creds:
         if not firebase_admin._apps:
             firebase_admin.initialize_app(creds)
         db = firestore.client()
-    except Exception as e:
-        logging.error(f"Firebase init error: {e}")
     except Exception as e:
         logging.error(f"Firebase init error: {e}")
 
@@ -150,6 +151,69 @@ def get_personal_categories(username):
     except:
         pass
     return DEFAULT_CATEGORIES
+
+def filter_expenses_by_period(expenses, period_id):
+    if period_id == 'all':
+        return sorted(expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    period_parts = period_id.split('-')
+    if len(period_parts) == 2:
+        year, month = int(period_parts[0]), int(period_parts[1])
+        start = datetime(year, month, 1)
+        end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
+        filtered = [
+            e for e in expenses
+            if e.get('created_at') and start.isoformat() <= e['created_at'] <= end.isoformat()
+        ]
+        return sorted(filtered, key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    return sorted(expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+
+def process_expense_data(expenses):
+    total = sum(e.get('amount', 0) for e in expenses)
+    category_totals = get_period_totals(expenses)
+    member_totals = {}
+    for e in expenses:
+        p = e.get('paid_by', 'Unknown')
+        member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
+    return {
+        'total': total,
+        'category_totals': category_totals,
+        'member_totals': member_totals
+    }
+
+def get_periods_options(months=6):
+    periods = []
+    for i in range(months):
+        d = datetime.now() - timedelta(days=i*30)
+        periods.append({
+            'id': f'{d.year}-{d.month:02d}',
+            'name': d.strftime('%B %Y')
+        })
+    periods.append({'id': 'all', 'name': 'All Time'})
+    return periods
+
+def get_user_budget(username, period_id):
+    if not db or period_id == 'all':
+        return None
+    try:
+        budget_doc = db.collection('budgets').document(f'{username}_{period_id}').get()
+        if budget_doc.exists:
+            return budget_doc.to_dict()
+    except Exception as e:
+        logging.error(f"Get user budget error: {e}")
+    return None
+
+def get_group_budget(group_id, period_id):
+    if not db or period_id == 'all':
+        return None
+    try:
+        budget_doc = db.collection('budgets').document(f'group_{group_id}_{period_id}').get()
+        if budget_doc.exists:
+            return budget_doc.to_dict()
+    except Exception as e:
+        logging.error(f"Get group budget error: {e}")
+    return None
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -296,42 +360,21 @@ def personal():
         expenses_ref = db.collection('expenses').where('user_id', '==', username)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
 
-        if period_id == 'all':
-            expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
-        else:
-            period_parts = period_id.split('-')
-            if len(period_parts) == 2:
-                year, month = int(period_parts[0]), int(period_parts[1])
-                start = datetime(year, month, 1)
-                end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
-                expenses_sorted = [
-                    e for e in all_expenses
-                    if e.get('created_at') and start.isoformat() <= e['created_at'] <= end.isoformat()
-                ]
-                expenses_sorted = sorted(expenses_sorted, key=lambda x: x.get('created_at', ''), reverse=True)
-            else:
-                expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
-
-        total = sum(e.get('amount', 0) for e in expenses_sorted)
-        category_totals = get_period_totals(expenses_sorted)
+        expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
+        processed = process_expense_data(expenses_sorted)
         categories = get_personal_categories(username)
+        periods = get_periods_options()
 
-        periods = []
-        for i in range(6):
-            d = datetime.now() - timedelta(days=i*30)
-            periods.append({
-                'id': f'{d.year}-{d.month:02d}',
-                'name': d.strftime('%B %Y')
-            })
-        periods.append({'id': 'all', 'name': 'All Time'})
+        budget = get_user_budget(username, period_id)
 
         return render_template('personal.html',
                          expenses=expenses_sorted,
-                         total=total,
-                         category_totals=category_totals,
+                         total=processed['total'],
+                         category_totals=processed['category_totals'],
                          categories=categories,
                          current_period=period_id,
                          periods=periods,
+                         budget=budget,
                          username=username)
     except Exception as e:
         logging.error(f"Personal error: {e}")
@@ -404,46 +447,25 @@ def search_personal():
         expenses_ref = db.collection('expenses').where('user_id', '==', username)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
 
-        if period_id == 'all':
-            expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
-        else:
-            period_parts = period_id.split('-')
-            if len(period_parts) == 2:
-                year, month = int(period_parts[0]), int(period_parts[1])
-                start = datetime(year, month, 1)
-                end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
-                expenses_sorted = [
-                    e for e in all_expenses
-                    if e.get('created_at') and start.isoformat() <= e['created_at'] <= end.isoformat()
-                ]
-                expenses_sorted = sorted(expenses_sorted, key=lambda x: x.get('created_at', ''), reverse=True)
-            else:
-                expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+        expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
 
         if query:
             expenses_sorted = [e for e in expenses_sorted if query in e.get('description', '').lower() or query in e.get('category', '').lower()]
 
-        total = sum(e.get('amount', 0) for e in expenses_sorted)
-        category_totals = get_period_totals(expenses_sorted)
+        processed = process_expense_data(expenses_sorted)
         categories = get_personal_categories(username)
-
-        periods = []
-        for i in range(6):
-            d = datetime.now() - timedelta(days=i*30)
-            periods.append({
-                'id': f'{d.year}-{d.month:02d}',
-                'name': d.strftime('%B %Y')
-            })
-        periods.append({'id': 'all', 'name': 'All Time'})
+        periods = get_periods_options()
+        budget = get_user_budget(username, period_id)
 
         return render_template('personal.html',
                          expenses=expenses_sorted,
-                         total=total,
-                         category_totals=category_totals,
+                         total=processed['total'],
+                         category_totals=processed['category_totals'],
                          categories=categories,
                          current_period=period_id,
                          periods=periods,
                          search_query=query,
+                         budget=budget,
                          username=username)
     except Exception as e:
         logging.error(f"Search personal error: {e}")
@@ -569,54 +591,27 @@ def index():
         expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
 
-        if period_id == 'all':
-            expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
-        else:
-            period_parts = period_id.split('-')
-            if len(period_parts) == 2:
-                year, month = int(period_parts[0]), int(period_parts[1])
-                start = datetime(year, month, 1)
-                end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
-                expenses_sorted = [
-                    e for e in all_expenses
-                    if e.get('created_at') and start.isoformat() <= e['created_at'] <= end.isoformat()
-                ]
-                expenses_sorted = sorted(expenses_sorted, key=lambda x: x.get('created_at', ''), reverse=True)
-            else:
-                expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+        expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
 
         if member_filter:
             expenses_sorted = [e for e in expenses_sorted if e.get('paid_by') == member_filter]
 
-        total = sum(e.get('amount', 0) for e in expenses_sorted)
-        category_totals = get_period_totals(expenses_sorted)
-
-        member_totals = {}
-        for e in expenses_sorted:
-            p = e.get('paid_by', 'Unknown')
-            member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
-
+        processed = process_expense_data(expenses_sorted)
         custom_cats = get_group_categories(group_id)
-
-        periods = []
-        for i in range(6):
-            d = datetime.now() - timedelta(days=i*30)
-            periods.append({
-                'id': f'{d.year}-{d.month:02d}',
-                'name': d.strftime('%B %Y')
-            })
-        periods.append({'id': 'all', 'name': 'All Time'})
+        periods = get_periods_options()
+        budget = get_group_budget(group_id, period_id)
 
         return render_template('index.html',
                          expenses=expenses_sorted,
-                         total=total,
-                         category_totals=category_totals,
+                         total=processed['total'],
+                         category_totals=processed['category_totals'],
                          categories=custom_cats,
                          current_period=period_id,
                          periods=periods,
                          members=members,
                          member_filter=member_filter,
-                         member_totals=member_totals,
+                         member_totals=processed['member_totals'],
+                         budget=budget,
                          username=username,
                          group_name=group['name'] if group else 'My Group',
                          invite_code=group['invite_code'] if group else 'N/A')
@@ -756,21 +751,7 @@ def search_expenses():
         expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
         all_expenses = [e.to_dict() for e in expenses_ref.stream()]
 
-        if period_id == 'all':
-            expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
-        else:
-            period_parts = period_id.split('-')
-            if len(period_parts) == 2:
-                year, month = int(period_parts[0]), int(period_parts[1])
-                start = datetime(year, month, 1)
-                end = datetime(year, month, monthrange(year, month)[1], 23, 59, 59)
-                expenses_sorted = [
-                    e for e in all_expenses
-                    if e.get('created_at') and start.isoformat() <= e['created_at'] <= end.isoformat()
-                ]
-                expenses_sorted = sorted(expenses_sorted, key=lambda x: x.get('created_at', ''), reverse=True)
-            else:
-                expenses_sorted = sorted(all_expenses, key=lambda x: x.get('created_at', ''), reverse=True)
+        expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
 
         if member_filter:
             expenses_sorted = [e for e in expenses_sorted if e.get('paid_by') == member_filter]
@@ -778,36 +759,23 @@ def search_expenses():
         if query:
             expenses_sorted = [e for e in expenses_sorted if query in e.get('description', '').lower() or query in e.get('category', '').lower()]
 
-        total = sum(e.get('amount', 0) for e in expenses_sorted)
-        category_totals = get_period_totals(expenses_sorted)
-
-        member_totals = {}
-        for e in expenses_sorted:
-            p = e.get('paid_by', 'Unknown')
-            member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
-
+        processed = process_expense_data(expenses_sorted)
         custom_cats = get_group_categories(group_id)
-
-        periods = []
-        for i in range(6):
-            d = datetime.now() - timedelta(days=i*30)
-            periods.append({
-                'id': f'{d.year}-{d.month:02d}',
-                'name': d.strftime('%B %Y')
-            })
-        periods.append({'id': 'all', 'name': 'All Time'})
+        periods = get_periods_options()
+        budget = get_group_budget(group_id, period_id)
 
         return render_template('index.html',
                          expenses=expenses_sorted,
-                         total=total,
-                         category_totals=category_totals,
+                         total=processed['total'],
+                         category_totals=processed['category_totals'],
                          categories=custom_cats,
                          current_period=period_id,
                          periods=periods,
                          members=members,
                          member_filter=member_filter,
-                         member_totals=member_totals,
+                         member_totals=processed['member_totals'],
                          search_query=query,
+                         budget=budget,
                          username=username,
                          group_name=group['name'] if group else 'My Group',
                          invite_code=group['invite_code'] if group else 'N/A')
@@ -865,6 +833,287 @@ def leave_group():
         logging.error(f"Leave group error: {e}")
 
     return redirect(url_for('index'))
+
+@app.route('/budget', methods=['GET', 'POST'])
+@login_required
+def budget():
+    username = session['username']
+    group_id = get_user_group_id(username)
+    current_period = get_current_period()
+    period_id = request.args.get('period', current_period['id'])
+
+    is_group = request.args.get('type') == 'group'
+    budget_id = f'group_{group_id}_{period_id}' if is_group else f'{username}_{period_id}'
+
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        if amount:
+            try:
+                db.collection('budgets').document(budget_id).set({
+                    'id': budget_id,
+                    'amount': float(amount),
+                    'period_id': period_id,
+                    'user_id': username,
+                    'group_id': group_id if is_group else None,
+                    'is_group': is_group
+                })
+            except Exception as e:
+                logging.error(f"Set budget error: {e}")
+        return redirect(request.referrer or url_for('index'))
+
+    try:
+        budget_doc = db.collection('budgets').document(budget_id).get()
+        current_budget = budget_doc.to_dict() if budget_doc.exists else None
+    except:
+        current_budget = None
+
+    if is_group and group_id:
+        try:
+            expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
+            all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+            expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
+            total = sum(e.get('amount', 0) for e in expenses_sorted)
+        except:
+            total = 0
+    else:
+        try:
+            expenses_ref = db.collection('expenses').where('user_id', '==', username)
+            all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+            expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
+            total = sum(e.get('amount', 0) for e in expenses_sorted)
+        except:
+            total = 0
+
+    return render_template('budget.html',
+                         budget=current_budget,
+                         spent=total,
+                         period_id=period_id,
+                         is_group=is_group,
+                         username=username,
+                         periods=get_periods_options())
+
+@app.route('/export_csv')
+@login_required
+def export_csv():
+    import csv
+    import io
+    from flask import Response
+    username = session['username']
+    group_id = get_user_group_id(username)
+    current_period = get_current_period()
+    period_id = request.args.get('period', current_period['id'])
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Date', 'Description', 'Category', 'Amount', 'Paid By'])
+
+    if group_id:
+        expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
+        all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+    else:
+        expenses_ref = db.collection('expenses').where('user_id', '==', username)
+        all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+
+    expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
+
+    for e in expenses_sorted:
+        writer.writerow([
+            e.get('created_at', ''),
+            e.get('description', ''),
+            e.get('category', ''),
+            e.get('amount', 0),
+            e.get('paid_by', '')
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=expenses_{period_id}.csv'}
+    )
+
+@app.route('/chart_data')
+@login_required
+def chart_data():
+    username = session['username']
+    group_id = get_user_group_id(username)
+    current_period = get_current_period()
+    period_id = request.args.get('period', current_period['id'])
+    chart_type = request.args.get('type', 'category')
+    view_type = request.args.get('view', 'group')
+
+    if view_type == 'personal' or not group_id:
+        expenses_ref = db.collection('expenses').where('user_id', '==', username)
+        all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+    else:
+        expenses_ref = db.collection('expenses').where('group_id', '==', group_id)
+        all_expenses = [e.to_dict() for e in expenses_ref.stream()]
+
+    expenses_sorted = filter_expenses_by_period(all_expenses, period_id)
+
+    if chart_type == 'category':
+        category_totals = get_period_totals(expenses_sorted)
+        labels = list(category_totals.keys())
+        values = list(category_totals.values())
+    else:
+        member_totals = {}
+        for e in expenses_sorted:
+            p = e.get('paid_by', 'Unknown')
+            member_totals[p] = member_totals.get(p, 0) + e.get('amount', 0)
+        labels = list(member_totals.keys())
+        values = list(member_totals.values())
+
+    return {'labels': labels, 'values': values}
+
+@app.route('/add_split_expense', methods=['POST'])
+@login_required
+def add_split_expense():
+    db_error = check_db()
+    if db_error:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    group_id = get_user_group_id(username)
+
+    if not group_id:
+        return redirect(url_for('index'))
+
+    description = request.form.get('description')
+    amount = request.form.get('amount')
+    category = request.form.get('category')
+    expense_date = request.form.get('expense_date')
+    split_type = request.form.get('split_type', 'equal')
+    split_members = request.form.getlist('split_members')
+
+    if description and amount and split_members:
+        expense_id = str(uuid.uuid4())
+        total_amount = float(amount)
+        
+        if split_type == 'equal':
+            split_amount = total_amount / len(split_members)
+            split_data = {member: round(split_amount, 2) for member in split_members}
+        else:
+            split_data = {}
+            remaining = total_amount
+            for i, member in enumerate(split_members):
+                if i == len(split_members) - 1:
+                    split_data[member] = round(remaining, 2)
+                else:
+                    custom_amount = float(request.form.get(f'custom_{member}', 0))
+                    split_data[member] = custom_amount
+                    remaining -= custom_amount
+
+        try:
+            created_at = expense_date + 'T00:00:00' if expense_date else datetime.now().isoformat()
+            db.collection('expenses').document(expense_id).set({
+                'id': expense_id,
+                'group_id': group_id,
+                'description': description,
+                'amount': total_amount,
+                'category': category if category else 'Others',
+                'paid_by': username,
+                'created_at': created_at,
+                'split_type': split_type,
+                'split_data': split_data,
+                'split_among': split_members
+            })
+        except Exception as e:
+            logging.error(f"Add split expense error: {e}")
+
+    return redirect(url_for('index'))
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/add_with_image', methods=['POST'])
+@login_required
+def add_expense_with_image():
+    db_error = check_db()
+    if db_error:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    group_id = get_user_group_id(username)
+
+    if not group_id:
+        return redirect(url_for('index'))
+
+    description = request.form.get('description')
+    amount = request.form.get('amount')
+    category = request.form.get('category')
+    expense_date = request.form.get('expense_date')
+    image = request.files.get('image')
+
+    image_filename = None
+    if image and image.filename:
+        ext = os.path.splitext(image.filename)[1].lower()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+            image_filename = f"{uuid.uuid4()}{ext}"
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+
+    if description and amount:
+        expense_id = str(uuid.uuid4())
+        try:
+            created_at = expense_date + 'T00:00:00' if expense_date else datetime.now().isoformat()
+            expense_data = {
+                'id': expense_id,
+                'group_id': group_id,
+                'description': description,
+                'amount': float(amount),
+                'category': category if category else 'Others',
+                'paid_by': username,
+                'created_at': created_at
+            }
+            if image_filename:
+                expense_data['image'] = image_filename
+            db.collection('expenses').document(expense_id).set(expense_data)
+        except Exception as e:
+            logging.error(f"Add expense error: {e}")
+
+    return redirect(url_for('index'))
+
+@app.route('/add_personal_with_image', methods=['POST'])
+@login_required
+def add_personal_expense_with_image():
+    db_error = check_db()
+    if db_error:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    description = request.form.get('description')
+    amount = request.form.get('amount')
+    category = request.form.get('category')
+    expense_date = request.form.get('expense_date')
+    image = request.files.get('image')
+
+    image_filename = None
+    if image and image.filename:
+        ext = os.path.splitext(image.filename)[1].lower()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+            image_filename = f"{uuid.uuid4()}{ext}"
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+
+    if description and amount:
+        expense_id = str(uuid.uuid4())
+        try:
+            created_at = expense_date + 'T00:00:00' if expense_date else datetime.now().isoformat()
+            expense_data = {
+                'id': expense_id,
+                'user_id': username,
+                'description': description,
+                'amount': float(amount),
+                'category': category if category else 'Others',
+                'paid_by': username,
+                'created_at': created_at
+            }
+            if image_filename:
+                expense_data['image'] = image_filename
+            db.collection('expenses').document(expense_id).set(expense_data)
+        except Exception as e:
+            logging.error(f"Add personal expense error: {e}")
+
+    return redirect(url_for('personal'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

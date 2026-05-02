@@ -2,92 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2C2416">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>My Expenses - SyncCent</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/static/sw.js');</script>
     <style>
-        :root{--p:#6366f1;--pd:#4f46e5;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--tl:#64748b;--b:#e2e8f0;--r:#ef4444;--tr:#3b82f6}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);-webkit-font-smoothing:antialiased}
-        .top-bar{background:var(--p);color:#fff;padding:.875rem 1rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(99,102,241,.3)}
-        .top-bar a{color:#fff;text-decoration:none;font-size:1.5rem;line-height:1}
-        .top-bar h1{font-size:1.1rem;font-weight:600}
-        .container{max-width:600px;margin:0 auto;padding:1rem}
-        .card{background:var(--c);border-radius:16px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-        .ts{text-align:center;padding:.5rem 0 .75rem}
-        .tl{font-size:.85rem;color:var(--tl);margin-bottom:.25rem}
-        .ta{font-size:2rem;font-weight:700;color:var(--p)}
-        .ps{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0;-webkit-overflow-scrolling:touch}
-        .pb{padding:.4rem .85rem;border:1px solid var(--b);background:#fff;border-radius:20px;font-size:.75rem;cursor:pointer;white-space:nowrap;transition:all .15s;font-weight:500}
-        .pb:hover{border-color:var(--p);color:var(--p)}
-        .pb.active{background:var(--p);color:#fff;border-color:var(--p)}
-        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-        .mb75{margin-bottom:.75rem}
-        input,select{width:100%;padding:.75rem .875rem;border:1px solid var(--b);border-radius:12px;font-size:.95rem;transition:all .2s;background:var(--c)}
-        input:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
-        button{width:100%;padding:.875rem;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s}
-        button:hover{background:var(--pd)}
-        .btn-secondary{background:0;border:1px dashed var(--b);color:var(--tl);padding:.65rem;font-size:.9rem;margin-top:.5rem}
-        .btn-secondary:hover{border-color:var(--p);color:var(--p);background:0}
-        .sb{display:flex;gap:.5rem;margin-bottom:1rem}
-        .sb input{flex:1}
-        .sb button{width:auto;padding:0 1rem}
-        .st{font-size:.9rem;font-weight:600;color:var(--tl);margin-bottom:.75rem}
-        .cg{display:grid;gap:.5rem}
-        .ci{display:flex;align-items:center;gap:.75rem}
-        .cd{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-        .cn{font-size:.9rem;flex:1;font-weight:500}
-        .cbc{flex:2;height:10px;background:var(--b);border-radius:5px;overflow:hidden}
-        .cb{height:100%;border-radius:5px;transition:width .3s ease}
-        .ca{font-size:.85rem;font-weight:600;min-width:55px;text-align:right}
-        .el{list-style:none}
-        .ei{background:var(--c);border-radius:12px;padding:1rem;margin-bottom:.65rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04);border-left:4px solid var(--p);transition:transform .15s ease}
-        .ei:hover{transform:translateX(2px)}
-        .ef{flex:1;min-width:0}
-        .ed{font-weight:600;font-size:.95rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .em{font-size:.8rem;color:var(--tl);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-        .cbg{padding:.2rem .6rem;border-radius:20px;font-size:.7rem;font-weight:600;color:#fff}
-        .er{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
-        .ea{font-weight:700;font-size:1.05rem;white-space:nowrap}
-        .ab{display:flex;gap:.25rem}
-        .bs{padding:.35rem .55rem;border-radius:8px;border:none;cursor:pointer;font-size:.75rem;font-weight:500;transition:all .15s}
-        .bs-edit{background:#e0e7ff;color:var(--p)}
-        .bs-edit:hover{background:#c7d2fe}
-        .bs-del{background:#fee2e2;color:#dc2626}
-        .bs-del:hover{background:#fecaca}
-        .es{text-align:center;padding:2rem 1rem;color:var(--tl)}
-        .mo{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
-        .mo.active{display:flex}
-        .m{background:#fff;padding:1.5rem;border-radius:16px;width:100%;max-width:400px}
-        .m h3{margin:0 0 1rem;color:var(--p);font-size:1.1rem}
-        .mb{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1rem}
-        .bc{background:var(--b);color:var(--t)}
-        .bc:hover{background:#cbd5e1}
-        @media (max-width:480px){.form-row{grid-template-columns:1fr}.ta{font-size:1.75rem}}
+        :root {
+            --bg: #F5F0E8;
+            --card: #FFFDF8;
+            --text-main: #2C2416;
+            --text-sub: #7A7067;
+            --accent: #D4A853;
+            --accent-soft: #FBEED4;
+            --border: #E8DFD3;
+            --primary: #2C2416;
+            --r: #D9534F;
+            --tr: #5B9BD5;
+            --g: #5CB85C;
+            --y: #F0AD4E;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; 
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #F0EBE3 0%, #F5F0E8 50%, #EBE5DC 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .top-bar { background: var(--card); color: var(--text-main); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .top-bar a { color: var(--text-main); text-decoration: none; font-size: 1.25rem; }
+        .top-bar h1 { font-size: 1.1rem; font-weight: 600; flex: 1; letter-spacing: -0.025em; }
+        .nav-btns { display: flex; gap: 0.5rem; }
+        .nb { background: var(--accent-soft); color: var(--accent); padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; text-decoration: none; }
+        .container { max-width: 550px; margin: 0 auto; padding: 1.5rem 1rem; }
+        .card { background: var(--card); border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(44,36,22,0.05); border: 1px solid rgba(44,36,22,0.03); }
+        .ts { text-align: center; margin-bottom: 0.5rem; }
+        .tl { font-size: 0.875rem; color: var(--text-sub); }
+        .ta { font-size: 2.25rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.05em; }
+        .ps { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
+        .pb { min-height: 40px; padding: 0.5rem 1rem; border: 1px solid var(--border); background: var(--card); border-radius: 12px; font-size: 0.8125rem; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .pb.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .mb75 { margin-bottom: 1rem; }
+        input, select { width: 100%; padding: 0.875rem; border: 1px solid var(--border); border-radius: 14px; font-size: 1rem; background: var(--bg); color: var(--text-main); font-family: inherit; }
+        input:focus, select:focus { outline: none; border-color: var(--text-main); }
+        button, .btn { width: 100%; padding: 1rem; background: var(--text-main); color: #fff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background: transparent; border: 1px dashed var(--border); color: var(--text-sub); margin-top: 0.75rem; }
+        .btn-small { width: auto; padding: 0.5rem 1rem; font-size: 0.875rem; }
+        .sb { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .sb input { flex: 1; }
+        .sb button { width: auto; padding: 0 1.25rem; }
+        .st { font-size: 0.875rem; font-weight: 600; color: var(--text-sub); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .st .alink { font-weight: 400; font-size: 0.8rem; color: var(--text-main); cursor: pointer; }
+        .cg { display: grid; gap: 0.75rem; }
+        .ci { display: flex; align-items: center; gap: 0.75rem; }
+        .cd { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .cn { font-size: 0.875rem; flex: 1; font-weight: 500; }
+        .cbc { flex: 1.5; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+        .cb { height: 100%; transition: width 0.3s ease; }
+        .ca { font-size: 0.875rem; font-weight: 600; min-width: 60px; text-align: right; }
+        .el { list-style: none; }
+        .ei { background: var(--card); border-radius: 20px; padding: 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(44,36,22,0.03); box-shadow: 0 2px 10px rgba(44,36,22,0.03); }
+        .ef { flex: 1; min-width: 0; }
+        .ed { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .em { font-size: 0.75rem; color: var(--text-sub); display: flex; gap: 0.5rem; align-items: center; }
+        .cbg { padding: 0.1rem 0.5rem; border-radius: 6px; font-weight: 600; color: #fff; font-size: 0.7rem; }
+        .er { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; margin-left: 1rem; }
+        .ea { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+        .ab { display: flex; gap: 0.4rem; }
+        .bs { min-height: 36px; padding: 0.4rem 0.75rem; border-radius: 10px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+        .bs-edit { background: #F3F4F6; color: var(--text-main); }
+        .bs-del { background: #FEE2E2; color: #EF4444; }
+        .es { text-align: center; padding: 3rem 1rem; color: var(--text-sub); }
+        .mo { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44,36,22,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
+        .mo.active { display: flex; }
+        .m { background: var(--card); padding: 2rem; border-radius: 24px; width: 100%; max-width: 380px; }
+        .m h3 { margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; }
+        .mb { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+        .bc { background: #F3F4F6; color: var(--text-main); }
+        .budget-progress { margin-bottom: 1.5rem; }
+        .bp-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+        .bp-fill { height: 100%; transition: width 0.5s ease; }
+        .bp-fill.safe { background: var(--g); }
+        .bp-fill.warn { background: var(--y); }
+        .bp-fill.over { background: var(--r); }
+        .chart-container { position: relative; height: 220px; margin-bottom: 1rem; }
+        @media (max-width: 480px) { 
+        .form-row { grid-template-columns: 1fr; } 
+        .ta { font-size: 1.75rem; } 
+        .top-bar { padding: 0.875rem 1rem; }
+        .card { padding: 1.25rem; border-radius: 20px; }
+        .container { padding: 1rem 0.75rem; }
+        .ei { padding: 1rem; border-radius: 16px; }
+    }
+    * { -webkit-tap-highlight-color: rgba(0,0,0,0); }
+    html { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
 <body>
-    <div class="top-bar"><a href="/home">←</a><h1>My Expenses</h1></div>
+    <div class="top-bar"><a href="/home">←</a><h1>My Expenses</h1><div class="nav-btns"><a href="/budget?type=personal&period={{ current_period }}" class="nb" style="background:var(--primary);color:#fff;padding:0.5rem 1rem;border-radius:10px;">Budget</a><a href="/export_csv?period={{ current_period }}" class="nb" style="background:var(--primary);color:#fff;padding:0.5rem 1rem;border-radius:10px;" download>Export</a></div></div>
     <div class="container">
+        {% if budget %}
+        <div class="card">
+            <div class="budget-progress">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-weight:600; font-size:0.875rem">Budget Progress</span>
+                    <span style="font-size:0.875rem; color:var(--text-sub)">{{ (spent|default(total)/budget.amount*100)|round|int }}% used</span>
+                </div>
+                <div class="bp-bar">
+                    {% set pct = (spent|default(total)/budget.amount*100)|round|int if budget.amount > 0 else 0 %}
+                    <div class="bp-fill {% if pct < 70 %}safe{% elif pct < 100 %}warn{% else %}over{% endif %}" style="width: {{ [pct, 100]|min }}%"></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <div class="card">
             <div class="ts"><div class="tl">Total Spending</div><div class="ta">${{ "%.2f"|format(total) }}</div></div>
             <div class="ps">{% for p in periods %}<button class="pb {% if p.id == current_period %}active{% endif %}" onclick="location.href='/personal?period={{ p.id }}'">{{ p.name }}</button>{% endfor %}</div>
         </div>
         <div class="card">
-            <form action="/add_personal" method="POST">
+            <form action="/add_personal_with_image" method="POST" enctype="multipart/form-data">
                 <div class="form-row mb75"><select name="category" required><option value="">Category</option>{% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select><input type="number" name="amount" step="0.01" placeholder="Amount ($)" required></div>
-                <div class="mb75"><input type="text" name="description" placeholder="What did you spend on? (optional)"></div>
-                <div class="form-row"><input type="date" name="expense_date"><button type="submit">Add Expense</button></div>
+                <div class="mb75"><input type="text" name="description" placeholder="What for? (optional)"></div>
+                <div class="form-row mb75"><input type="date" name="expense_date"><input type="file" name="image" accept="image/*" placeholder="Receipt"></div>
+                <button type="submit">Add</button>
             </form>
-            <button class="btn-secondary" onclick="document.getElementById('cm').classList.add('active')">+ Add Custom Category</button>
+            <button class="btn-secondary" onclick="document.getElementById('cm').classList.add('active')">+ Add Category</button>
         </div>
-        <div class="sb"><form method="GET" style="display:flex;gap:.5rem;width:100%"><input type="hidden" name="period" value="{{ current_period }}"><input type="text" name="q" placeholder="Search..." value="{{ search_query or '' }}"><button type="submit">Search</button></form></div>
+        <div class="sb"><form method="GET" style="display:flex;gap:0.5rem;width:100%"><input type="hidden" name="period" value="{{ current_period }}"><input type="text" name="q" placeholder="Search..." value="{{ search_query or '' }}" list="search-suggestions"><button type="submit" class="btn-small">Go</button></form><datalist id="search-suggestions">{% for e in expenses %}<option value="{{ e.description }}">{% endfor %}</datalist></div>
         {% if category_totals %}
-        <div class="card"><div class="st">Spending by Category</div><div class="cg">{% set ma = namespace(v=0) %}{% for c,a in category_totals.items() %}{% if a>ma.v %}{% set ma.v=a %}{% endif %}{% endfor %}{% for c,a in category_totals.items() %}<div class="ci"><div class="cd" style="background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--p){% else %}var(--tl){% endif %})"></div><span class="cn">{{ c }}</span><div class="cbc"><div class="cb" style="width:{{ (a/ma.v*100)|round }}%;background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--p){% else %}var(--tl){% endif %})"></div></div><span class="ca">${{ "%.0f"|format(a) }}</span></div>{% endfor %}</div></div>{% endif %}
-        <div class="st">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}</div>
-        <ul class="el">{% for e in expenses %}<li class="ei" style="border-left-color:var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--p){% else %}var(--tl){% endif %})"><div class="ef"><div class="ed">{{ e.description or 'No description' }}</div><div class="em"><span class="cbg" style="background:var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--p){% else %}var(--tl){% endif %})">{{ e.category }}</span><span>{{ e.created_at[:10] if e.created_at else '' }}</span></div></div><div class="er"><span class="ea">${{ "%.2f"|format(e.amount|float) }}</span><div class="ab"><button class="bs bs-edit" onclick="om('{{ e.id }}','{{ e.description }}','{{ e.amount }}','{{ e.category }}','{{ e.created_at[:10] if e.created_at else '' }}')">Edit</button><form method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="bs bs-del">X</button></form></div></div></li>{% endfor %}{% if not expenses %}<div class="es"><p>No expenses yet. Add your first one!</p></div>{% endif %}</ul>{% if search_query %}<div style="text-align:center;margin-top:1rem"><a href="/personal?period={{ current_period }}" style="color:var(--p);font-weight:500">Clear Search</a></div>{% endif %}
+        <div class="card">
+            <div class="st">Spending by Category</div>
+            <div class="cg">{% set ma = namespace(v=0) %}{% for c,a in category_totals.items() %}{% if a>ma.v %}{% set ma.v=a %}{% endif %}{% endfor %}{% for c,a in category_totals.items() %}<div class="ci"><div class="cd" style="background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--accent){% else %}var(--text-sub){% endif %})"></div><span class="cn">{{ c }}</span><div class="cbc"><div class="cb" style="width:{{ (a/ma.v*100)|round }}%;background:var(--{% if c=='Food' %}r{% elif c=='Transport' %}tr{% elif c=='Rent' %}#8b5cf6{% elif c=='Shopping' %}#ec4899{% elif c=='Entertainment' %}#f59e0b{% elif c=='Utilities' %}#14b8a6{% elif c=='Healthcare' %}#22c55e{% elif c=='Trip' %}var(--accent){% else %}var(--text-sub){% endif %})"></div></div><span class="ca">${{ "%.0f"|format(a) }}</span></div>{% endfor %}</div>
+        </div>
+        {% endif %}
+        <div class="card">
+            <div class="st">Insights<div class="alink" onclick="loadChart()">Refresh</div></div>
+            <div class="chart-container"><canvas id="chartCanvas"></canvas></div>
+        </div>
+        <div class="st">{% if search_query %}Search Results{% else %}Recent Expenses{% endif %}{% if expenses %}<span style="font-weight:400;color:var(--text-sub);font-size:0.8rem">{{ expenses|length }} items</span>{% endif %}</div>
+        <ul class="el">{% for e in expenses %}<li class="ei" style="border-left:4px solid var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--accent){% else %}var(--text-sub){% endif %})">{% if e.image %}<div onclick="window.open('/uploads/{{ e.image }}','_blank')" style="cursor:pointer;margin-right:1rem"><img src="/uploads/{{ e.image }}" style="width:50px;height:50px;object-fit:cover;border-radius:10px"></div>{% endif %}<div class="ef"><div class="ed">{{ e.description or 'No description' }}{% if e.image %}<span style="font-size:0.65rem;background:var(--tr);color:#fff;padding:0.1rem 0.4rem;border-radius:6px;margin-left:0.4rem">📷</span>{% endif %}</div><div class="em"><span class="cbg" style="background:var(--{% if e.category=='Food' %}r{% elif e.category=='Transport' %}tr{% elif e.category=='Rent' %}#8b5cf6{% elif e.category=='Shopping' %}#ec4899{% elif e.category=='Entertainment' %}#f59e0b{% elif e.category=='Utilities' %}#14b8a6{% elif e.category=='Healthcare' %}#22c55e{% elif e.category=='Trip' %}var(--accent){% else %}var(--text-sub){% endif %})">{{ e.category }}</span><span>{{ e.created_at[:10] if e.created_at else '' }}</span></div></div><div class="er"><span class="ea">${{ "%.2f"|format(e.amount|float) }}</span><div class="ab"><button class="bs bs-edit" onclick="om('{{ e.id }}','{{ e.description }}','{{ e.amount }}','{{ e.category }}','{{ e.created_at[:10] if e.created_at else '' }}')">Edit</button><button class="bs bs-del" onclick="confirmDelete('{{ e.id }}')">X</button></div></div></li>{% endfor %}{% if not expenses %}<div class="es"><p>No expenses found.</p><p style="font-size:0.875rem">Start by adding an expense above.</p></div>{% endif %}</ul>
     </div>
-    <div class="mo" id="cm"><div class="m"><h3>Add Custom Category</h3><form method="POST" action="/add_personal_category"><input type="text" name="new_category" placeholder="Category name" required style="width:100%"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('cm').classList.remove('active')">Cancel</button><button type="submit">Add</button></div></form></div></div>
-    <div class="mo" id="em"><div class="m"><h3>Edit Expense</h3><form id="ef" method="POST"><select name="category" id="ec" required style="width:100%;margin-bottom:.75rem"></select><input type="number" name="amount" id="ea" step="0.01" placeholder="Amount" required style="width:100%;margin-bottom:.75rem"><input type="text" name="description" id="ed" placeholder="Description" style="width:100%;margin-bottom:.75rem"><input type="date" name="expense_date" id="edt" style="width:100%"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('em').classList.remove('active')">Cancel</button><button type="submit">Save</button></div></form></div></div>
-    <script>const c={{ categories|tojson }};function om(id,desc,amt,cat,dt){document.getElementById('ef').action='/edit_personal_expense/'+id;document.getElementById('ec').innerHTML=c.map(x=>'<option value="'+x+'" '+(x===cat?'selected':'')+'>'+x+'</option>').join('');document.getElementById('ea').value=amt;document.getElementById('ed').value=desc||'';document.getElementById('edt').value=dt;document.getElementById('em').classList.add('active')}document.getElementById('em').addEventListener('click',e=>{if(e.target===this)e.target.classList.remove('active')});</script>
+    <div class="mo" id="cm"><div class="m"><h3>New Category</h3><form method="POST" action="/add_personal_category"><input type="text" name="new_category" placeholder="Name" required><div class="mb"><button type="button" class="bc" onclick="document.getElementById('cm').classList.remove('active')">Cancel</button><button type="submit">Add</button></div></form></div></div>
+    <div class="mo" id="em"><div class="m"><h3>Edit Expense</h3><form id="ef" method="POST"><select name="category" id="ec" required style="width:100%;margin-bottom:1rem"></select><input type="number" name="amount" id="ea" step="0.01" placeholder="Amount" required style="width:100%;margin-bottom:1rem"><input type="text" name="description" id="ed" placeholder="Description" style="width:100%;margin-bottom:1rem"><input type="date" name="expense_date" id="edt" style="width:100%;margin-bottom:1rem"><div class="mb"><button type="button" class="bc" onclick="document.getElementById('em').classList.remove('active')">Cancel</button><button type="submit">Save</button></div></form></div></div>
+    <div class="mo" id="dm"><div class="m"><h3>Delete?</h3><p style="font-size:0.875rem;color:var(--text-sub);margin-bottom:1.5rem">This action cannot be undone.</p><div class="mb"><button type="button" class="bc" onclick="document.getElementById('dm').classList.remove('active')">Cancel</button><button type="button" style="background:var(--r)" onclick="executeDelete()">Delete</button></div></div></div>
+    <script>
+        const categories = {{ categories|tojson }};
+        let deleteId = null;
+        function om(id, desc, amt, cat, dt) {
+            document.getElementById('ef').action = '/edit_personal_expense/' + id;
+            document.getElementById('ec').innerHTML = categories.map(x => `<option value="${x}" ${x === cat ? 'selected' : ''}>${x}</option>`).join('');
+            document.getElementById('ea').value = amt;
+            document.getElementById('ed').value = desc || '';
+            document.getElementById('edt').value = dt;
+            document.getElementById('em').classList.add('active');
+        }
+        function confirmDelete(id) { deleteId = id; document.getElementById('dm').classList.add('active'); }
+        function executeDelete() {
+            if (deleteId) {
+                const f = document.createElement('form');
+                f.method = 'POST';
+                f.action = '/delete_personal_expense/' + deleteId;
+                document.body.appendChild(f);
+                f.submit();
+            }
+        }
+        window.onclick = function(event) { if (event.target.className === 'mo active') event.target.classList.remove('active'); }
+        function loadChart() {
+            fetch('/chart_data?period={{ current_period }}&type=category&view=personal')
+                .then(r => r.json())
+                .then(d => {
+                    const ctx = document.getElementById('chartCanvas').getContext('2d');
+                    if (window.chartInstance) window.chartInstance.destroy();
+                    window.chartInstance = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: { labels: d.labels, datasets: [{ data: d.values, backgroundColor: ['#D9534F','#5B9BD5','#8B5CF6','#EC4899','#F0AD4E','#5CB85C','#D4A853','#7A7067'] }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, padding: 15 } } } }
+                    });
+                });
+        }
+        loadChart();
+    </script>
 </body>
 </html>

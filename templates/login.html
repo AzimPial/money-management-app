@@ -2,20 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2C2416">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>SyncCent - Login</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/static/sw.js');</script>
     <style>
         :root {
-            --primary: #6366f1;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
+            --bg: #F5F0E8;
+            --card: #FFFDF8;
+            --text-main: #2C2416;
+            --text-sub: #7A7067;
+            --accent: #D4A853;
+            --accent-soft: #FBEED4;
+            --border: #E8DFD3;
+            --primary: #2C2416;
+            --r: #D9534F;
+            --g: #5CB85C;
         }
-
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #F0EBE3 0%, #F5F0E8 50%, #EBE5DC 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             margin: 0;
             padding: 2rem;
             display: flex;
@@ -23,79 +50,76 @@
             align-items: center;
             min-height: 100vh;
         }
-
-        .container {
-            width: 100%;
-            max-width: 400px;
-        }
-
+        .container { width: 100%; max-width: 400px; }
         .card {
             background: var(--card);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
         }
-
         h2 {
             text-align: center;
-            color: var(--primary);
+            color: var(--text-main);
             margin-top: 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.025em;
         }
-
-        form {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
+        form { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
         input {
-            padding: 0.75rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
+            padding: 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 14px;
             font-size: 1rem;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: inherit;
         }
-
+        input:focus { outline: none; border-color: var(--text-main); }
         button {
             background-color: var(--primary);
             color: white;
-            padding: 0.75rem;
+            padding: 1rem;
             border: none;
-            border-radius: 0.5rem;
+            border-radius: 14px;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
             transition: opacity 0.2s;
         }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
+        button:hover { opacity: 0.9; }
         .error {
-            color: #ef4444;
+            color: var(--r);
             font-size: 0.875rem;
             text-align: center;
             margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #FEE2E2;
+            border-radius: 10px;
         }
-
         .toggle-text {
             text-align: center;
             font-size: 0.875rem;
+            color: var(--text-sub);
         }
-
         .toggle-text a {
-            color: var(--primary);
+            color: var(--text-main);
             text-decoration: none;
             font-weight: 600;
         }
-
-        .toggle-text a:hover {
-            text-decoration: underline;
-        }
-    </style>
+        .toggle-text a:hover { text-decoration: underline; }
+        @media (max-width: 480px) { 
+        body { padding: 1rem; align-items: flex-start; padding-top: 20vh; } 
+        .card { padding: 1.5rem; } 
+        .logo { font-size: 1.75rem; }
+    }
+    * { -webkit-tap-highlight-color: rgba(0,0,0,0); }
 </head>
 <body>
     <div class="container">
         <div class="card">
+            <div class="logo">SyncCent</div>
             <h2 id="form-title">{% if is_register %}Register{% else %}Login{% endif %}</h2>
             {% if error %}
             <div class="error">{{ error }}</div>

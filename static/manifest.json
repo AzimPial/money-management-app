@@ -1,0 +1,22 @@
+{
+    "name": "SyncCent - Expense Tracker",
+    "short_name": "SyncCent",
+    "description": "Track your expenses - personal and group",
+    "start_url": "/home",
+    "display": "standalone",
+    "background_color": "#F0EBE3",
+    "theme_color": "#2C2416",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/static/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
