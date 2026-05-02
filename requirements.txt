@@ -1,2 +1,4 @@
-Flask
-firebase-admin
+Flask==3.1.3
+firebase-admin==6.5.0
+Werkzeug==3.1.3
+gunicorn==22.0.0
